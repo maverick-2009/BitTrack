@@ -1,0 +1,40 @@
+{
+  "electrum": {
+    "name": "Umbrel Local",
+    "host": "192.168.0.10",
+    "port": 50002,
+    "tls": false
+  },
+  "telegram": {
+    "token": "00000000000000000000000000000000000000",
+    "chatId": "000000000000"
+  },
+  "general": {
+    "mempoolExplorer": "https://192.168.0.10:3006/",
+    "currency": "USD",
+    "timezone": "America/Sao_Paulo",
+    "dateLocale": "pt-BR",
+    "panelPort": 8585
+  },
+  "monitor": {
+    "gapLimit": 10,
+    "maxIndex": 1000,
+    "pingIntervalSec": 60,
+    "subscribeDelayMs": 0,
+    "priceApis": ["coingecko", "binance", "blockchain.info"],
+    "priceCheckIntervalSec": 300,
+    "priceRefMaxDeviationPct": 20,
+    "priceThresholdMinPct": 0.1,
+    "priceThresholdMaxPct": 50
+  },
+  "notifications": {
+    "mempoolPending": true,
+    "txConfirmed": true,
+    "everyBlock": false,
+    "blockIntervalMin": 0,
+    "priceChange": false,
+    "priceThresholdPct": 1,
+    "priceReference": null
+
+  }
+}

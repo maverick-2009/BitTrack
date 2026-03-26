@@ -1,0 +1,1193 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<title>BitTrack</title>
+<style>
+:root {
+  --bg: #0a0a0a;
+  --surface: #141414;
+  --surface2: #1c1c1c;
+  --border: #2a2a2a;
+  --border2: #3a3a3a;
+  --text: #f0f0f0;
+  --text2: #aaaaaa;
+  --text3: #666666;
+  --accent: #f0c040;
+  --accent2: #c89a20;
+  --green: #4ade80;
+  --red: #f87171;
+  --blue: #60a5fa;
+  --mono: 'Courier New', 'Consolas', monospace;
+  --sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { height: 100%; background: var(--bg); color: var(--text); font-family: var(--sans); font-size: 15px; line-height: 1.5; }
+
+.login-wrap { display: flex; align-items: center; justify-content: center; min-height: 100vh; min-height: 100dvh; padding: 20px; }
+.login-box { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 40px; width: min(340px, 100%); }
+.login-title { font-family: var(--mono); font-size: 20px; color: var(--accent); margin-bottom: 4px; }
+.login-sub { font-size: 13px; color: var(--text3); margin-bottom: 28px; }
+.login-error { font-size: 12px; color: var(--red); margin-top: 10px; font-family: var(--mono); display: none; }
+
+.shell { display: flex; height: 100vh; overflow: hidden; }
+.sidebar { width: 210px; flex-shrink: 0; border-right: 1px solid var(--border); display: flex; flex-direction: column; padding: 20px 0; }
+.main { flex: 1; overflow-y: auto; padding: 32px 36px; }
+
+.logo { padding: 0 20px 24px; border-bottom: 1px solid var(--border); margin-bottom: 16px; }
+.logo-mark { font-family: var(--mono); font-size: 19px; font-weight: 500; color: var(--accent); }
+.logo-sub { font-size: 11px; color: var(--text3); letter-spacing: 0.1em; text-transform: uppercase; margin-top: 3px; }
+.nav-item { display: flex; align-items: center; gap: 10px; padding: 10px 20px; color: var(--text2); cursor: pointer; font-size: 14px; transition: all 0.15s; border-left: 2px solid transparent; }
+.nav-item:hover { color: var(--text); background: var(--surface); }
+.nav-item.active { color: var(--accent); border-left-color: var(--accent); background: rgba(240,192,64,0.05); }
+.nav-icon { width: 16px; height: 16px; flex-shrink: 0; opacity: 0.5; }
+.nav-item.active .nav-icon { opacity: 1; }
+.status-bar { margin-top: auto; padding: 16px 20px; border-top: 1px solid var(--border); }
+.status-dot { display: inline-block; width: 7px; height: 7px; border-radius: 50%; background: var(--text3); margin-right: 7px; vertical-align: middle; }
+.status-dot.ok { background: var(--green); box-shadow: 0 0 6px var(--green); }
+.status-dot.err { background: var(--red); }
+.status-text { font-size: 12px; color: var(--text2); font-family: var(--mono); }
+
+.page { display: none; }
+.page.active { display: block; }
+.page-title { font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--text3); margin-bottom: 28px; font-family: var(--mono); }
+
+.card { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 22px; margin-bottom: 16px; }
+.card-label { font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text2); margin-bottom: 16px; font-family: var(--mono); font-weight: 500; }
+
+.metrics { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 20px; }
+.metric { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 18px; }
+.metric-val { font-family: var(--mono); font-size: 28px; font-weight: 500; color: var(--text); }
+.metric-label { font-size: 12px; color: var(--text2); margin-top: 5px; }
+
+.field { margin-bottom: 16px; }
+.field label { display: block; font-size: 12px; color: var(--text2); margin-bottom: 7px; font-family: var(--mono); }
+.field input, .field select, .field textarea {
+  width: 100%; padding: 9px 12px; background: var(--surface2); border: 1px solid var(--border);
+  border-radius: 5px; color: var(--text); font-family: var(--mono); font-size: 14px;
+  transition: border-color 0.15s; outline: none;
+}
+.field input:focus, .field select:focus, .field textarea:focus { border-color: var(--border2); }
+.field textarea { resize: vertical; min-height: 72px; line-height: 1.6; }
+.field select option { background: var(--surface2); }
+.field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.field-row3 { display: grid; grid-template-columns: 2fr 1fr 80px; gap: 12px; }
+
+.btn { padding: 8px 16px; border-radius: 5px; font-family: var(--mono); font-size: 12px; cursor: pointer; transition: all 0.15s; border: 1px solid var(--border2); background: none; color: var(--text2); }
+.btn:hover { color: var(--text); border-color: #555; }
+.btn-primary { background: var(--accent); color: #000; border-color: var(--accent); font-weight: 500; }
+.btn-primary:hover { background: var(--accent2); border-color: var(--accent2); }
+.btn-danger { color: var(--red); border-color: rgba(248,113,113,0.3); }
+.btn-danger:hover { background: rgba(248,113,113,0.08); }
+.btn-sm { padding: 6px 12px; font-size: 12px; }
+.btn-row { display: flex; gap: 8px; justify-content: flex-end; margin-top: 16px; }
+
+.server-item { display: flex; align-items: center; gap: 12px; padding: 14px 0; border-bottom: 1px solid var(--border); }
+.server-item:last-child { border-bottom: none; }
+.server-info { flex: 1; }
+.server-name { font-size: 14px; font-weight: 500; color: var(--text); }
+.server-addr { font-family: var(--mono); font-size: 12px; color: var(--text2); margin-top: 3px; }
+.server-actions { display: flex; gap: 6px; align-items: center; }
+.badge { display: inline-block; padding: 3px 8px; border-radius: 3px; font-size: 11px; font-family: var(--mono); }
+.badge-net { background: rgba(96,165,250,0.15); color: var(--blue); }
+.badge-selected { background: rgba(240,192,64,0.15); color: var(--accent); }
+.badge-local { background: rgba(74,222,128,0.15); color: var(--green); }
+
+.wallet-item { background: var(--surface2); border: 1px solid var(--border); border-radius: 7px; padding: 16px; margin-bottom: 12px; }
+.wallet-item:last-child { margin-bottom: 0; }
+.wallet-header { display: flex; align-items: center; gap: 10px; margin-bottom: 7px; }
+.wallet-name { font-size: 14px; font-weight: 500; color: var(--text); flex: 1; }
+.wallet-desc { font-family: var(--mono); font-size: 12px; color: var(--text2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; }
+.wallet-meta { font-size: 12px; color: var(--text2); margin-top: 5px; }
+.wallet-notif { display: flex; gap: 20px; margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--border); flex-wrap: wrap; }
+.wallet-notif-item { display: flex; align-items: center; gap: 10px; }
+.wallet-notif-item .wn-label { display: flex; flex-direction: column; }
+.wallet-notif-item .wn-title { font-size: 12px; color: var(--text); font-weight: 500; }
+.wallet-notif-item .wn-desc  { font-size: 11px; color: var(--text3); font-family: var(--mono); margin-top: 1px; }
+.wn-toggle { position: relative; width: 36px; height: 20px; flex-shrink: 0; }
+.wn-toggle input { opacity: 0; width: 0; height: 0; position: absolute; }
+.wn-slider { position: absolute; inset: 0; border-radius: 20px; background: var(--border2); cursor: pointer; transition: background .2s; }
+.wn-slider:before { content: ''; position: absolute; left: 3px; top: 3px; width: 14px; height: 14px; border-radius: 50%; background: var(--text3); transition: transform .2s, background .2s; }
+.wn-toggle input:checked + .wn-slider { background: rgba(240,192,64,0.3); }
+.wn-toggle input:checked + .wn-slider:before { transform: translateX(16px); background: var(--accent); }
+
+.addr-table { width: 100%; border-collapse: collapse; font-family: var(--mono); font-size: 12px; }
+.addr-table th { text-align: left; padding: 10px 12px; color: var(--text2); font-weight: 500; font-size: 11px; letter-spacing: 0.06em; border-bottom: 1px solid var(--border); }
+.addr-table td { padding: 9px 12px; border-bottom: 1px solid var(--border); color: var(--text2); }
+.addr-table tr:last-child td { border-bottom: none; }
+.addr-table tr:hover td { background: var(--surface2); }
+.has-balance { color: var(--green) !important; }
+.chip { display: inline-block; padding: 2px 7px; border-radius: 3px; font-size: 11px; }
+.chip-ext { background: rgba(96,165,250,0.12); color: var(--blue); }
+.chip-chg { background: rgba(240,192,64,0.12); color: var(--accent); }
+
+.price-display { display: flex; align-items: baseline; gap: 14px; }
+.price-big { font-family: var(--mono); font-size: 34px; font-weight: 500; color: var(--accent); }
+.price-change { font-family: var(--mono); font-size: 13px; padding: 3px 9px; border-radius: 4px; }
+.price-up { background: rgba(74,222,128,0.12); color: var(--green); }
+.price-dn { background: rgba(248,113,113,0.1); color: var(--red); }
+.price-meta { font-size: 12px; color: var(--text3); margin-top: 7px; font-family: var(--mono); }
+
+.filters { display: flex; gap: 8px; margin-bottom: 16px; }
+.filters select { padding: 7px 11px; background: var(--surface); border: 1px solid var(--border); border-radius: 5px; color: var(--text2); font-family: var(--mono); font-size: 12px; outline: none; cursor: pointer; }
+.filters select:hover { border-color: var(--border2); color: var(--text); }
+
+.divider { height: 1px; background: var(--border); margin: 18px 0; }
+
+.toast { position: fixed; bottom: 24px; right: 24px; background: var(--surface2); border: 1px solid var(--border2); border-radius: 6px; padding: 12px 18px; font-family: var(--mono); font-size: 13px; transform: translateY(80px); opacity: 0; transition: all 0.3s; z-index: 200; }
+.toast.show { transform: translateY(0); opacity: 1; }
+.toast.ok { border-color: rgba(74,222,128,0.4); color: var(--green); }
+.toast.err { border-color: rgba(248,113,113,0.4); color: var(--red); }
+
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 2px; }
+
+/* ─── LOADING OVERLAY ────────────────────────────────────────────────────────*/
+.loading-overlay { position: fixed; inset: 0; background: rgba(10,10,10,0.75); z-index: 500; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 16px; backdrop-filter: blur(2px); }
+.loading-overlay.hidden { display: none; }
+.loading-spinner { width: 36px; height: 36px; border: 3px solid var(--border2); border-top-color: var(--accent); border-radius: 50%; animation: spin 0.7s linear infinite; }
+.loading-msg { font-family: var(--mono); font-size: 13px; color: var(--text2); }
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.add-form { display: none; }
+.add-form.open { display: block; }
+
+/* ─── iOS / mobile fixes ─────────────────────────────────────────────────────*/
+* { -webkit-tap-highlight-color: transparent; }
+.sidebar { padding-bottom: env(safe-area-inset-bottom); }
+@media (max-width: 640px) {
+  .main { padding-bottom: calc(80px + env(safe-area-inset-bottom)); }
+}
+
+/* ─── RESPONSIVO (mobile) ────────────────────────────────────────────────────*/
+@media (max-width: 640px) {
+  .shell { flex-direction: column; }
+  .sidebar {
+    width: 100%; height: auto; flex-direction: row;
+    border-right: none; border-top: 1px solid var(--border);
+    padding: 0; order: 2;
+    position: fixed; bottom: 0; left: 0; right: 0;
+    z-index: 100; background: var(--surface);
+  }
+  .sidebar .logo { display: none; }
+  .sidebar .status-bar { display: none; }
+  .sidebar nav { display: flex; flex-direction: row; width: 100%; justify-content: space-around; }
+  .nav-item {
+    flex: 1; flex-direction: column; gap: 4px;
+    padding: 10px 4px 12px; font-size: 10px;
+    border-left: none; border-top: 2px solid transparent;
+    justify-content: center; text-align: center;
+  }
+  .nav-item.active { border-left: none; border-top-color: var(--accent); background: rgba(240,192,64,0.05); }
+  .nav-icon { width: 20px; height: 20px; }
+  .main { padding: 16px; padding-bottom: 80px; order: 1; height: 100vh; overflow-y: auto; }
+  .metrics { grid-template-columns: repeat(2, 1fr); }
+  .metric-val { font-size: 20px; }
+  .addr-table th:nth-child(1), .addr-table td:nth-child(1) { display: none; }
+  .addr-table th:nth-child(3), .addr-table td:nth-child(3) { display: none; }
+  .addr-table td:nth-child(4) { font-size: 10px; max-width: 140px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .field-row  { grid-template-columns: 1fr; }
+  .field-row3 { grid-template-columns: 1fr; }
+  .card { padding: 14px; }
+  .price-big { font-size: 24px; }
+  .toast { bottom: 80px; right: 12px; left: 12px; text-align: center; }
+  .login-box { width: 90%; padding: 28px 20px; }
+  .filters { flex-wrap: wrap; }
+  .filters select { flex: 1; min-width: 100px; }
+  .page-title { margin-bottom: 16px; }
+  .btn-row { flex-wrap: wrap; }
+  .btn-row .btn { flex: 1; text-align: center; }
+  .wallet-notif { gap: 12px; }
+  /* iOS: inputs com font-size < 16px disparam zoom automático ao focar */
+  input, select, textarea { font-size: 16px !important; }
+}
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div id="login-screen" class="login-wrap">
+  <div class="login-box">
+    <div class="login-title">BitTrack</div>
+    <div class="login-sub">monitor v5 · acesso restrito</div>
+    <div class="field">
+      <label>senha</label>
+      <input id="login-pw" type="password" placeholder="••••••••" onkeydown="if(event.key==='Enter')doLogin()"/>
+    </div>
+    <button class="btn btn-primary" style="width:100%" onclick="doLogin()">entrar</button>
+    <div class="login-error" id="login-error">senha incorreta</div>
+  </div>
+</div>
+
+<!-- APP -->
+<div id="app" style="display:none;height:100%">
+<div class="shell">
+  <aside class="sidebar">
+    <div class="logo">
+      <div class="logo-mark">BitTrack</div>
+      <div class="logo-sub">monitor v5</div>
+    </div>
+    <nav>
+      <div class="nav-item active" onclick="nav('overview')">
+        <svg class="nav-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5">
+          <rect x="1" y="1" width="6" height="6" rx="1"/><rect x="9" y="1" width="6" height="6" rx="1"/>
+          <rect x="1" y="9" width="6" height="6" rx="1"/><rect x="9" y="9" width="6" height="6" rx="1"/>
+        </svg>
+        Visão geral
+      </div>
+      <div class="nav-item" onclick="nav('wallets')">
+        <svg class="nav-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5">
+          <rect x="1" y="4" width="14" height="10" rx="1.5"/>
+          <path d="M4 4V3a1 1 0 011-1h6a1 1 0 011 1v1"/>
+          <circle cx="11" cy="9" r="1.5" fill="currentColor" stroke="none"/>
+        </svg>
+        Carteiras
+      </div>
+      <div class="nav-item" onclick="nav('addresses')">
+        <svg class="nav-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5">
+          <path d="M2 4h12M2 8h8M2 12h10"/>
+        </svg>
+        Endereços
+      </div>
+      <div class="nav-item" onclick="nav('settings')">
+        <svg class="nav-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5">
+          <circle cx="8" cy="8" r="2.5"/>
+          <path d="M8 1v2M8 13v2M1 8h2M13 8h2M3.05 3.05l1.41 1.41M11.54 11.54l1.41 1.41M3.05 12.95l1.41-1.41M11.54 4.46l1.41-1.41"/>
+        </svg>
+        Configuração
+      </div>
+    </nav>
+    <div class="status-bar">
+      <div><span class="status-dot" id="conn-dot"></span><span class="status-text" id="conn-text">carregando...</span></div>
+    </div>
+  </aside>
+
+  <main class="main">
+
+    <!-- OVERVIEW -->
+    <div id="page-overview" class="page active">
+      <div class="page-title">// visão geral</div>
+      <div class="metrics">
+        <div class="metric"><div class="metric-val" id="m-wallets">—</div><div class="metric-label">carteiras</div></div>
+        <div class="metric"><div class="metric-val" id="m-addresses">—</div><div class="metric-label">endereços</div></div>
+        <div class="metric"><div class="metric-val" id="m-withbal">—</div><div class="metric-label">com saldo</div></div>
+        <div class="metric"><div class="metric-val" id="m-total">—</div><div class="metric-label">saldo total (BTC)</div></div>
+      </div>
+      <div class="card" id="price-card" style="display:none">
+        <div class="card-label">preço bitcoin</div>
+        <div class="price-display">
+          <div class="price-big" id="price-val">—</div>
+          <div class="price-change" id="price-change">—</div>
+        </div>
+        <div class="price-meta" id="price-meta">—</div>
+      </div>
+      <div class="card">
+        <div class="card-label">servidor electrum</div>
+        <div id="ov-server"><div style="color:var(--text3);font-family:var(--mono);font-size:13px">nenhum servidor configurado</div></div>
+      </div>
+    </div>
+
+    <!-- WALLETS -->
+    <div id="page-wallets" class="page">
+      <div class="page-title">// carteiras</div>
+      <div class="card">
+        <div class="card-label">descritores configurados</div>
+        <div id="wallet-list"><div style="color:var(--text3);font-size:13px;font-family:var(--mono)">carregando...</div></div>
+      </div>
+      <div class="card">
+        <div style="display:flex;justify-content:space-between;align-items:center;cursor:pointer" onclick="toggleAddWallet()">
+          <div class="card-label" style="margin:0">+ adicionar carteira</div>
+          <svg id="add-chevron" style="width:14px;height:14px;color:var(--text3);transition:transform .2s" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 6l4 4 4-4"/></svg>
+        </div>
+        <div id="add-wallet-form" class="add-form">
+          <div class="divider"></div>
+          <div class="field"><label>nome</label><input id="w-name" placeholder="ex: Cold Storage"/></div>
+          <div class="field"><label>startIndex</label><input id="w-start" type="number" value="0" style="max-width:100px"/></div>
+          <div class="field"><label>descritor</label>
+            <textarea id="w-desc" placeholder="tr([fingerprint/path]xpub.../<0;1>/*)" oninput="autoDetectDescriptor(this.value)"></textarea>
+          </div>
+          <div id="w-autodetect" style="font-size:12px;color:var(--text3);font-family:var(--mono);margin-bottom:8px;display:none"></div>
+          <div id="w-preview" style="font-family:var(--mono);font-size:12px;color:var(--text2);margin-bottom:8px;display:none;line-height:1.8"></div>
+          <div class="btn-row">
+            <button class="btn btn-sm" onclick="previewDescriptor()">testar derivação</button>
+            <button class="btn btn-primary btn-sm" onclick="saveWallet()">salvar</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ADDRESSES -->
+    <div id="page-addresses" class="page">
+      <div class="page-title">// endereços monitorados</div>
+      <div class="filters">
+        <select id="f-wallet" onchange="renderAddresses()"><option value="">todas as carteiras</option></select>
+        <select id="f-chain" onchange="renderAddresses()">
+          <option value="">ext + change</option>
+          <option value="0">só externos</option>
+          <option value="1">só change</option>
+        </select>
+        <select id="f-bal" onchange="renderAddresses()">
+          <option value="">todos</option>
+          <option value="1">com saldo</option>
+          <option value="0">sem saldo</option>
+        </select>
+      </div>
+      <div class="card" style="padding:0;overflow:hidden">
+        <table class="addr-table">
+          <thead><tr>
+            <th>#</th><th>tipo</th><th>carteira</th><th>endereço</th>
+            <th style="text-align:right">saldo (BTC)</th><th style="text-align:right">txs</th>
+          </tr></thead>
+          <tbody id="addr-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- SETTINGS -->
+    <div id="page-settings" class="page">
+      <div class="page-title">// configuração</div>
+
+      <div class="card">
+        <div class="card-label">servidor electrum</div>
+        <div id="server-list"></div>
+        <div class="divider"></div>
+        <div style="display:flex;justify-content:space-between;align-items:center;cursor:pointer" onclick="toggleAddServer()">
+          <div style="font-size:12px;color:var(--text2);font-family:var(--mono)">+ servidor personalizado</div>
+          <svg id="srv-chevron" style="width:14px;height:14px;color:var(--text3);transition:transform .2s" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 6l4 4 4-4"/></svg>
+        </div>
+        <div id="add-server-form" class="add-form">
+          <div style="height:14px"></div>
+          <div class="field"><label>nome</label><input id="s-name" placeholder="Meu Fulcrum"/></div>
+          <div class="field-row3">
+            <div class="field"><label>host</label><input id="s-host" placeholder="192.168.x.x"/></div>
+            <div class="field"><label>porta</label><input id="s-port" type="number" placeholder="50002"/></div>
+            <div class="field"><label>TLS</label>
+              <select id="s-tls"><option value="true">sim</option><option value="false">não</option></select>
+            </div>
+          </div>
+          <div class="btn-row">
+            <button class="btn btn-sm" onclick="testServer()">testar conexão</button>
+            <button class="btn btn-primary btn-sm" onclick="saveServer()">salvar</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-label">configurações telegram</div>
+        <div class="field"><label>token</label><input id="tg-token" type="password" placeholder="1234567890:AAH..." oninput="markSettingsDirty()"/></div>
+        <div class="field"><label>chat ID</label><input id="tg-chatid" placeholder="727926440" oninput="markSettingsDirty()"/></div>
+        <div class="btn-row">
+          <button class="btn btn-sm" onclick="testTelegram()">testar envio</button>
+          <button class="btn btn-primary btn-sm" onclick="saveTelegram()">salvar</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-label">notificações globais telegram</div>
+        <div style="font-size:12px;color:var(--text3);font-family:var(--mono);margin-bottom:14px">Escolha quais eventos geram mensagem no Telegram</div>
+        <style>
+          .notif-row { display:flex; align-items:flex-start; gap:12px; padding:10px 0; border-bottom:1px solid var(--border); }
+          .notif-row:last-child { border-bottom:none; }
+          .notif-toggle { position:relative; width:36px; height:20px; flex-shrink:0; margin-top:1px; }
+          .notif-toggle input { opacity:0; width:0; height:0; position:absolute; }
+          .notif-slider { position:absolute; inset:0; border-radius:20px; background:var(--border2); cursor:pointer; transition:background .2s; }
+          .notif-slider:before { content:''; position:absolute; left:3px; top:3px; width:14px; height:14px; border-radius:50%; background:var(--text3); transition:transform .2s, background .2s; }
+          .notif-toggle input:checked + .notif-slider { background:rgba(240,192,64,0.3); }
+          .notif-toggle input:checked + .notif-slider:before { transform:translateX(16px); background:var(--accent); }
+          .notif-text { flex:1; }
+          .notif-label { font-size:13px; color:var(--text); font-weight:500; }
+          .notif-desc { font-size:12px; color:var(--text3); font-family:var(--mono); margin-top:3px; }
+          .notif-sub { margin-top:10px; display:none; padding:10px 14px; background:var(--surface2); border-radius:5px; border:1px solid var(--border); }
+          .notif-sub.open { display:block; }
+          .notif-sub label { display:block; font-size:12px; color:var(--text2); font-family:var(--mono); margin-bottom:7px; }
+          .notif-sub input[type=number] { padding:6px 10px; background:var(--bg); border:1px solid var(--border); border-radius:4px; color:var(--text); font-family:var(--mono); font-size:12px; width:140px; outline:none; }
+          .notif-sub input[type=number]:focus { border-color:var(--border2); }
+        </style>
+
+        <div class="notif-row">
+          <label class="notif-toggle">
+            <input type="checkbox" id="notif-every-block" onchange="markSettingsDirty(); toggleNotifSub('block-sub', this.checked)">
+            <span class="notif-slider"></span>
+          </label>
+          <div class="notif-text">
+            <div class="notif-label">⛏️ Todo bloco minerado</div>
+            <div class="notif-desc">Envia uma mensagem a cada novo bloco, mesmo sem txs suas</div>
+            <div id="block-sub" class="notif-sub">
+              <label>Intervalo mínimo entre alertas (minutos)</label>
+              <input type="number" id="notif-block-interval" oninput="markSettingsDirty()" value="0" min="0" max="1440" placeholder="0 = todos"/>
+              <div style="font-size:11px;color:var(--text3);margin-top:6px">0 = notifica todos os blocos</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="notif-row">
+          <label class="notif-toggle">
+            <input type="checkbox" id="notif-price-change" onchange="markSettingsDirty(); toggleNotifSub('price-sub', this.checked)">
+            <span class="notif-slider"></span>
+          </label>
+          <div class="notif-text">
+            <div class="notif-label">📊 Variação de preço (BTC/USD)</div>
+            <div class="notif-desc">Alerta quando o preço variar mais que o limiar definido</div>
+            <div id="price-sub" class="notif-sub">
+              <label>Limiar de variação (%)</label>
+              <input type="number" id="notif-price-threshold" value="1" min="0.01" max="50" step="0.1" placeholder="ex: 1" oninput="markSettingsDirty(); validatePriceThreshold()"/>
+              <div id="notif-threshold-warn" style="font-size:11px;color:var(--red);margin-top:4px;display:none"></div>
+              <div id="notif-threshold-hint" style="font-size:11px;color:var(--text3);margin-top:4px">Faixa permitida: 1% a 50%</div>
+              <div id="notif-threshold-value" style="font-size:12px;color:var(--accent);font-family:var(--mono);margin-top:4px;display:none"></div>
+              <div style="height:10px"></div>
+              <label>Preço de referência <span style="color:var(--text3);font-weight:normal">— opcional</span></label>
+              <input type="number" id="notif-price-reference" min="1" placeholder="deixe vazio para usar preço atual" oninput="markSettingsDirty(); validatePriceReference(); validatePriceThreshold()"/>
+              <div id="notif-reference-warn" style="font-size:11px;color:var(--red);margin-top:4px;display:none"></div>
+              <div id="notif-reference-hint" style="font-size:11px;color:var(--text3);margin-top:4px">Limite: ±20% do preço atual. Vazio = usa o preço atual.</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="btn-row">
+          <button class="btn btn-primary btn-sm" onclick="saveNotifPrefs()">salvar preferências</button>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-label">monitor</div>
+        <div class="field-row">
+          <div class="field">
+            <label>gap limit</label>
+            <input id="cfg-gap" type="number" value="10" min="1" max="10" oninput="markSettingsDirty(); validateGapLimit()"/>
+            <div style="font-size:11px; margin-top:4px; white-space: nowrap;">
+              <span id="gap-hint" style="color:var(--text3)">Faixa: 1 a 10</span>
+              <span id="gap-warn" style="color:var(--red); display:none; margin-left:4px">⚠️ Inválido</span>
+            </div>
+          </div>
+          <div class="field">
+            <label>max index</label>
+            <input id="cfg-max" type="number" value="1000" min="1" max="10000" oninput="markSettingsDirty(); validateMaxIndex()"/>
+            <div style="font-size:11px; margin-top:4px; white-space: nowrap;">
+              <span id="max-hint" style="color:var(--text3)">Limite: 10.000</span>
+              <span id="max-warn" style="color:var(--red); display:none; margin-left:4px">⚠️ Inválido</span>
+            </div>
+          </div>
+        </div>
+        <div class="field"><label>mempool explorer (URL base)</label><input id="cfg-mempool" placeholder="https://mempool.space/" oninput="markSettingsDirty()"/></div>
+        <div class="btn-row">
+          <button class="btn btn-primary btn-sm" onclick="saveMonitorCfg()">salvar</button>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-label">senha do painel</div>
+        <div class="field"><label>senha atual</label><input id="pw-current" type="password" placeholder="••••••••"/></div>
+        <div class="field"><label>nova senha</label><input id="pw-new" type="password" placeholder="••••••••"/></div>
+        <div class="field"><label>confirmar</label><input id="pw-confirm" type="password" placeholder="••••••••"/></div>
+        <div class="btn-row">
+          <button class="btn btn-primary btn-sm" onclick="changePassword()">alterar senha</button>
+        </div>
+      </div>
+    </div>
+
+  </main>
+</div>
+</div>
+
+<div id="loading-overlay" class="loading-overlay hidden">
+  <div class="loading-spinner"></div>
+  <div class="loading-msg" id="loading-msg">aguarde...</div>
+</div>
+<div class="toast" id="toast"></div>
+<script>
+const API = '';
+let cfg = {}, servers = [], wallets = [], state = {};
+
+function doLogin() {
+  const pw = document.getElementById('login-pw').value;
+  fetch(`${API}/api/auth/login`, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({password:pw}) })
+    .then(r=>r.json()).then(d=>{
+      if(d.ok){
+        sessionStorage.setItem('bw_token',d.token);
+        document.getElementById('login-screen').style.display='none';
+        document.getElementById('app').style.display='block';
+        _bootApp();
+      } else {
+        const err=document.getElementById('login-error');
+        err.style.display='block';
+        document.getElementById('login-pw').value='';
+        setTimeout(()=>err.style.display='none',3000);
+      }
+    }).catch(()=>toast('erro ao conectar com o servidor','err'));
+}
+
+// Inicialização comum após login (manual ou automático)
+// Verifica o lock ANTES de qualquer outra coisa para bloquear a UI imediatamente
+// caso haja uma operação em andamento em outra janela/aba.
+async function _bootApp(){
+  startPolling();
+  startLockPoll();
+  // Verificação imediata do lock — não espera o primeiro tick do poll
+  try {
+    const lock = await apiFetch('/api/runtime-lock');
+    if(lock.active) showLoading(lock.msg || 'aguarde...');
+  } catch {}
+  load();
+}
+
+function getToken(){ return sessionStorage.getItem('bw_token')||''; }
+
+function apiFetch(url,opts={}){
+  opts.headers={...(opts.headers||{}),'X-Auth-Token':getToken()};
+  return fetch(API+url,opts).then(r=>{
+    if(r.status===401){ sessionStorage.removeItem('bw_token'); stopPolling(); location.reload(); }
+    return r.json();
+  });
+}
+
+async function changePassword(){
+  const current=document.getElementById('pw-current').value;
+  const nw=document.getElementById('pw-new').value;
+  const confirm=document.getElementById('pw-confirm').value;
+  if(!current||!nw) return toast('preencha todos os campos','err');
+  if(nw!==confirm) return toast('senhas não coincidem','err');
+  if(nw.length<4) return toast('senha muito curta (min. 4 caracteres)','err');
+  const d=await apiFetch('/api/auth/change-password',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({current,novo:nw})});
+  if(d.ok){ toast('senha alterada','ok'); ['pw-current','pw-new','pw-confirm'].forEach(id=>document.getElementById(id).value=''); }
+  else toast(d.error||'erro ao alterar senha','err');
+}
+
+window.addEventListener('load',()=>{
+  const token=getToken();
+  if(token) apiFetch('/api/auth/check').then(d=>{
+    if(d.ok){
+      document.getElementById('login-screen').style.display='none';
+      document.getElementById('app').style.display='block';
+      _bootApp();
+    }
+  }).catch(()=>{});
+});
+
+async function load(){
+  try {
+    const [c,srv,w,st]=await Promise.all([apiFetch('/api/config'),apiFetch('/api/servers'),apiFetch('/api/wallets'),apiFetch('/api/state')]);
+    cfg    =(c  &&typeof c ==='object'&&!Array.isArray(c)) ?c :cfg;
+    servers=Array.isArray(srv)?srv:servers;
+    wallets=Array.isArray(w)?w:wallets;
+    state  =(st &&typeof st==='object'&&!Array.isArray(st))?st:state;
+    render();
+  } catch(e){ toast('erro ao carregar: '+e.message,'err'); }
+}
+
+function render(){
+  renderOverview(); renderWallets(); renderAddresses(); renderServers();
+  if(!_settingsActive||_settingsFocused()||_settingsDirty) return;
+  renderSettings();
+}
+
+let _settingsActive=false, _settingsDirty=false;
+function _settingsFocused(){ const a=document.activeElement; return a&&document.getElementById('page-settings')?.contains(a); }
+function markSettingsDirty(){ _settingsDirty=true; }
+function clearSettingsDirty(){ _settingsDirty=false; }
+
+function nav(id){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  document.getElementById('page-'+id).classList.add('active');
+  event.currentTarget.classList.add('active');
+  _settingsActive=(id==='settings');
+  if(id==='addresses') renderAddresses();
+  if(id==='settings'){ _settingsDirty=false; renderSettings(); syncNotifSubs(); }
+}
+
+function renderOverview(){
+  const allAddrs=flatState();
+  const withBal=allAddrs.filter(a=>a.balanceSat>0);
+  const total=allAddrs.reduce((s,a)=>s+(a.balanceSat||0),0);
+  document.getElementById('m-wallets').textContent=wallets.length;
+  document.getElementById('m-addresses').textContent=allAddrs.length;
+  document.getElementById('m-withbal').textContent=withBal.length;
+  document.getElementById('m-total').textContent=(total/1e8).toFixed(8);
+  const sel=cfg.electrum;
+  const ovSrv=document.getElementById('ov-server');
+  if(sel&&sel.host){
+    const isLocal=sel.host.startsWith('192.168')||sel.host==='localhost';
+    const dotColor=isLocal?'var(--green)':'var(--blue)';
+    const dotShadow=isLocal?'box-shadow:0 0 6px var(--green)':'';
+    ovSrv.innerHTML=`<div style="display:flex;align-items:center;gap:12px">
+      <span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:${dotColor};${dotShadow};flex-shrink:0"></span>
+      <div><div style="font-size:14px;font-weight:500;color:var(--text)">${sel.name||sel.host}</div>
+      <div style="font-family:var(--mono);font-size:12px;color:var(--text2);margin-top:3px">${sel.host}:${sel.port} · ${sel.tls?'TLS':'TCP'}</div></div></div>`;
+    document.getElementById('conn-dot').className='status-dot';
+    document.getElementById('conn-text').textContent='testando...';
+    apiFetch('/api/server-status').then(d=>{
+      document.getElementById('conn-dot').className='status-dot '+(d.ok?'ok':'err');
+      document.getElementById('conn-text').textContent=d.ok?sel.host.slice(0,18):'sem conexão';
+    }).catch(()=>{ document.getElementById('conn-dot').className='status-dot err'; document.getElementById('conn-text').textContent='erro'; });
+  } else {
+    ovSrv.innerHTML='<div style="color:var(--text3);font-family:var(--mono);font-size:13px">nenhum servidor selecionado</div>';
+    document.getElementById('conn-dot').className='status-dot err';
+    document.getElementById('conn-text').textContent='não configurado';
+  }
+  fetchPrice();
+}
+
+async function fetchPrice(){
+  try {
+    const d=await apiFetch('/api/price'); if(!d.ok) return;
+    const price=d.usd;
+    const updatedSec=d.updatedAt?Math.round((Date.now()-d.updatedAt)/1000):null;
+    const ageLabel=updatedSec!==null?(updatedSec<60?`${updatedSec}s atrás`:`${Math.round(updatedSec/60)}min atrás`):'—';
+    document.getElementById('price-val').textContent='$'+price.toLocaleString('en-US',{maximumFractionDigits:0});
+    const el=document.getElementById('price-change'); el.textContent='ao vivo'; el.className='price-change price-up';
+    document.getElementById('price-meta').textContent=`bitcoin · USD · atualizado ${ageLabel}`;
+    document.getElementById('price-card').style.display='block';
+  } catch{}
+}
+
+function renderWallets(){
+  const el=document.getElementById('wallet-list');
+  if(!wallets.length){ el.innerHTML='<div style="color:var(--text3);font-size:13px;font-family:var(--mono)">nenhuma carteira configurada</div>'; return; }
+  el.innerHTML=wallets.map((w,i)=>{
+    const notifyMempool=w.notify?.mempoolPending!==false;
+    const notifyConfirm=w.notify?.txConfirmed!==false;
+    return `<div class="wallet-item">
+      <div class="wallet-header">
+        <div class="wallet-name">${w.name}</div>
+        <button class="btn btn-sm btn-danger" onclick="removeWallet(${i})">remover</button>
+      </div>
+      <div class="wallet-desc" style="white-space:pre-wrap;word-break:break-all;overflow:visible;font-size:13px;line-height:1.7;color:var(--text2)">${w.descriptor}</div>
+      <div class="wallet-meta">startIndex: ${w.startIndex??0} · mainnet</div>
+      <div class="wallet-notif">
+        <div style="font-size:11px;color:var(--text3);font-family:var(--mono);width:100%;margin-bottom:6px;letter-spacing:0.06em;text-transform:uppercase">Notificações Telegram</div>
+        <div class="wallet-notif-item">
+          <label class="wn-toggle"><input type="checkbox" ${notifyMempool?'checked':''} onchange="toggleWalletNotif(${i},'mempoolPending',this.checked)"/><span class="wn-slider"></span></label>
+          <div class="wn-label"><span class="wn-title">📥 Transação na mempool</span><span class="wn-desc">alerta quando lançada na fila (não confirmada)</span></div>
+        </div>
+        <div class="wallet-notif-item">
+          <label class="wn-toggle"><input type="checkbox" ${notifyConfirm?'checked':''} onchange="toggleWalletNotif(${i},'txConfirmed',this.checked)"/><span class="wn-slider"></span></label>
+          <div class="wn-label"><span class="wn-title">✅ Transação confirmada</span><span class="wn-desc">alerta quando incluída em um bloco</span></div>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+async function toggleWalletNotif(i,key,value){
+  if(!wallets[i].notify) wallets[i].notify={};
+  wallets[i].notify[key]=value;
+  await apiFetch('/api/wallets',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(wallets)});
+  toast(`${wallets[i].name}: ${key==='mempoolPending'?'mempool':'confirmada'} ${value?'ativada':'desativada'}`,'ok');
+}
+
+function toggleAddWallet(){
+  const f=document.getElementById('add-wallet-form');
+  const c=document.getElementById('add-chevron');
+  const open=f.classList.toggle('open');
+  c.style.transform=open?'rotate(180deg)':'';
+  if(!open) _normalizedDescriptor=null;
+}
+
+let _normalizedDescriptor=null;
+
+async function previewDescriptor(){
+  const desc=document.getElementById('w-desc').value.trim();
+  const start=parseInt(document.getElementById('w-start').value)||0;
+  const prev=document.getElementById('w-preview');
+  if(!desc) return toast('cole um descritor primeiro','err');
+  try {
+    const d=await apiFetch('/api/derive',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({descriptor:desc,network:'mainnet',startIndex:start,count:3})});
+    // Erro da API — limpa preview anterior e exibe erro em vermelho
+    if(d.error){
+      _normalizedDescriptor=null;
+      prev.style.display='block';
+      prev.innerHTML=`<div style="color:var(--red);font-size:12px;word-break:break-all">✗ chave inválida: ${d.error}</div>`;
+      return;
+    }
+    if(!d.addresses||d.addresses.length===0){
+      _normalizedDescriptor=null;
+      prev.style.display='block';
+      prev.innerHTML=`<div style="color:var(--red);font-size:12px">✗ nenhum endereço derivado — verifique o descritor</div>`;
+      return;
+    }
+    _normalizedDescriptor=d.normalized||desc;
+    prev.style.display='block';
+    // Decide o label: chave isolada (sem wrapper) → "chave consolidada", descritor → "descritor consolidado"
+    const isRawKey=!d.normalized||(!/^(tr|wpkh|pkh|sh|wsh|addr)\(/.test(d.normalized)&&!d.normalized.startsWith('addr('));
+    const isSingleAddr=d.normalized&&d.normalized.startsWith('addr(');
+    const consolidadoLabel=isSingleAddr?'✓ endereço detectado:':isRawKey?'✓ chave consolidada:':'✓ descritor consolidado:';
+    const consolidadoNote=`<div style="color:var(--accent);margin-bottom:8px;font-size:11px;word-break:break-all">${consolidadoLabel}<br>${d.normalized}</div>`;
+    prev.innerHTML=consolidadoNote+(isSingleAddr?'<div style="color:var(--text3);margin-bottom:6px;font-size:11px">endereço único:</div>':'<div style="color:var(--text3);margin-bottom:6px;font-size:11px">prévia (3 endereços):</div>')+
+      d.addresses.map(a=>isSingleAddr?`<div>${a.address}</div>`:`<div>[${a.chain===0?'ext':'chg'}/${a.index}] ${a.address}</div>`).join('');
+    toast('derivação OK — '+d.addresses.length+' endereços','ok');
+  } catch(e){
+    _normalizedDescriptor=null;
+    prev.style.display='block';
+    prev.innerHTML=`<div style="color:var(--red);font-size:12px">✗ erro: ${e.message}</div>`;
+  }
+}
+
+async function saveWallet(){
+  const rawDesc=document.getElementById('w-desc').value.trim();
+  const wName=document.getElementById('w-name').value.trim();
+  if(!wName) return toast('preencha o nome','err');
+  if(!rawDesc) return toast('cole um descritor','err');
+  showLoading(`salvando "${wName}"...`);
+  await new Promise(r => setTimeout(r, 0));
+  queueWalletOp(async () => {
+    try {
+      let normalized=_normalizedDescriptor;
+      if(!normalized){
+        const d=await apiFetch('/api/derive',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({descriptor:rawDesc,startIndex:parseInt(document.getElementById('w-start').value)||0,count:1})});
+        if(d.error){ hideLoading(); toast('Descritor inválido: '+d.error,'err'); return; }
+        if(!d.addresses||d.addresses.length===0){ hideLoading(); toast('Descritor inválido — nenhum endereço derivado','err'); return; }
+        normalized=d.normalized||rawDesc;
+      }
+      const w={
+        name: wName,
+        network: 'mainnet',
+        startIndex: parseInt(document.getElementById('w-start').value)||0,
+        descriptor: normalized,
+        notify: { mempoolPending: true, txConfirmed: true }
+      };
+      _normalizedDescriptor=null;
+      wallets.push(w);
+      await apiFetch('/api/wallets',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(wallets)});
+      document.getElementById('add-wallet-form').classList.remove('open');
+      document.getElementById('add-chevron').style.transform='';
+      document.getElementById('w-name').value='';
+      document.getElementById('w-desc').value='';
+      document.getElementById('w-start').value='0';
+      document.getElementById('w-preview').style.display='none';
+      document.getElementById('w-autodetect').style.display='none';
+    } catch(e){
+      hideLoading();
+      toast('erro ao salvar: '+e.message,'err');
+    }
+  });
+}
+
+async function removeWallet(i){
+  if(!confirm(`Remover "${wallets[i].name}"?`)) return;
+  const name=wallets[i].name;
+  showLoading(`removendo "${name}"...`);
+  await new Promise(r => setTimeout(r, 0));
+  queueWalletOp(async () => {
+    try {
+      wallets.splice(i,1);
+      await apiFetch('/api/wallets',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(wallets)});
+    } catch(e){
+      hideLoading();
+      toast('erro ao remover: '+e.message,'err');
+    }
+  });
+}
+
+function flatState(){
+  const rows=[];
+  for(const [wName,wData] of Object.entries(state)){
+    if(typeof wData!=='object') continue;
+    for(const [label,lData] of Object.entries(wData)){
+      if(typeof lData!=='object') continue;
+      const chain=label==='externo'?0:1;
+      for(const [addr,aData] of Object.entries(lData)) rows.push({wallet:wName,chain,address:addr,...aData});
+    }
+  }
+  return rows;
+}
+
+function renderAddresses(){
+  const fWallet=document.getElementById('f-wallet')?.value||'';
+  const fChain=document.getElementById('f-chain')?.value;
+  const fBal=document.getElementById('f-bal')?.value;
+  const wSel=document.getElementById('f-wallet');
+  if(wSel){
+    const selected=wSel.value;
+    wSel.innerHTML='<option value="">todas as carteiras</option>';
+    wallets.forEach(w=>{ const o=document.createElement('option'); o.value=w.name; o.textContent=w.name; if(w.name===selected) o.selected=true; wSel.appendChild(o); });
+  }
+  let rows=flatState();
+  if(fWallet) rows=rows.filter(r=>r.wallet===fWallet);
+  if(fChain!=='') rows=rows.filter(r=>r.chain===parseInt(fChain));
+  if(fBal==='1') rows=rows.filter(r=>(r.balanceSat||0)>0);
+  if(fBal==='0') rows=rows.filter(r=>(r.balanceSat||0)===0);
+  const tbody=document.getElementById('addr-tbody');
+  if(!rows.length){ tbody.innerHTML='<tr><td colspan="6" style="text-align:center;color:var(--text3);padding:24px">nenhum endereço</td></tr>'; return; }
+  const explorerBase=(cfg.general?.mempoolExplorer||'').replace(/\/$/,'');
+  tbody.innerHTML=rows.map((r,i)=>{
+    const bal=(r.balanceSat||0)/1e8;
+    const txCount=(r.txids?.length||0)+(r.mempoolTxids?.length||0);
+    const addrCell=explorerBase?`<a href="${explorerBase}/address/${r.address}" target="_blank" rel="noopener" style="color:inherit;text-decoration:none;border-bottom:1px dotted var(--border2)" title="Ver no explorador">${r.address}</a>`:r.address;
+    return `<tr><td style="color:var(--text3)">${i+1}</td><td><span class="chip ${r.chain===0?'chip-ext':'chip-chg'}">${r.chain===0?'ext':'chg'}</span></td><td style="color:var(--text2)">${r.wallet}</td><td class="${bal>0?'has-balance':''}">${addrCell}</td><td style="text-align:right;${bal>0?'color:var(--green)':''}">${bal.toFixed(8)}</td><td style="text-align:right;color:var(--text3)">${txCount}</td></tr>`;
+  }).join('');
+}
+
+function renderServers(){
+  const el=document.getElementById('server-list');
+  const sel=cfg.electrum;
+  el.innerHTML=servers.map((s,i)=>{
+    const isSelected=sel&&sel.host===s.host&&sel.port===s.port;
+    const isLocal=s.host.startsWith('192.168')||s.host==='localhost';
+    return `<div class="server-item"><div class="server-info"><div class="server-name">${s.name}</div><div class="server-addr">${s.host}:${s.port} · ${s.tls?'TLS':'TCP'}</div></div><div class="server-actions">${isLocal?'<span class="badge badge-local">local</span>':''}${isSelected?'<span class="badge badge-selected">ativo</span>':`<button class="btn btn-sm" onclick="selectServer(${i})">usar</button>`}${!s.builtin?`<button class="btn btn-sm btn-danger" onclick="removeServer(${i})">×</button>`:''}</div></div>`;
+  }).join('');
+}
+
+function toggleAddServer(){
+  const f=document.getElementById('add-server-form');
+  const c=document.getElementById('srv-chevron');
+  const open=f.classList.toggle('open');
+  c.style.transform=open?'rotate(180deg)':'';
+}
+
+async function selectServer(i){
+  const s=servers[i];
+  showLoading(`conectando ao servidor "${s.name}"…`);
+  await new Promise(r => setTimeout(r, 0));
+  await apiFetch('/api/config',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({electrum:{name:s.name,host:s.host,port:s.port,tls:s.tls}})});
+  cfg.electrum={name:s.name,host:s.host,port:s.port,tls:s.tls};
+  toast(`servidor "${s.name}" selecionado`,'ok');
+}
+
+async function testServer(){
+  const host=document.getElementById('s-host').value.trim();
+  const port=parseInt(document.getElementById('s-port').value);
+  const tls=document.getElementById('s-tls').value==='true';
+  if(!host||!port) return toast('preencha host e porta','err');
+  const d=await apiFetch('/api/test-server',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({host,port,tls})});
+  d.ok?toast('conexão OK: '+d.version,'ok'):toast('falhou: '+d.error,'err');
+}
+
+async function saveServer(){
+  const s={name:document.getElementById('s-name').value.trim(),host:document.getElementById('s-host').value.trim(),port:parseInt(document.getElementById('s-port').value),tls:document.getElementById('s-tls').value==='true',builtin:false};
+  if(!s.name||!s.host||!s.port) return toast('preencha todos os campos','err');
+  servers.push(s);
+  await apiFetch('/api/servers',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(servers)});
+  toast('servidor salvo','ok'); toggleAddServer(); renderServers();
+}
+
+async function removeServer(i){
+  servers.splice(i,1);
+  await apiFetch('/api/servers',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(servers)});
+  renderServers();
+}
+
+function renderSettings(){
+  if(cfg.telegram){
+    if(cfg.telegram.token) document.getElementById('tg-token').value=cfg.telegram.token;
+    if(cfg.telegram.chatId) document.getElementById('tg-chatid').value=cfg.telegram.chatId;
+  }
+  const mon=cfg.monitor||{};
+  if(mon.gapLimit) document.getElementById('cfg-gap').value=mon.gapLimit;
+  if(mon.maxIndex) document.getElementById('cfg-max').value=mon.maxIndex;
+  validateGapLimit();
+  validateMaxIndex();
+  const gen=cfg.general||{};
+  if(gen.mempoolExplorer) document.getElementById('cfg-mempool').value=gen.mempoolExplorer;
+  const n=cfg.notifications||{};
+  document.getElementById('notif-every-block').checked=n.everyBlock===true;
+  document.getElementById('notif-price-change').checked=n.priceChange===true;
+  if(n.blockIntervalMin!=null) document.getElementById('notif-block-interval').value=n.blockIntervalMin;
+  if(n.priceThresholdPct!=null){ document.getElementById('notif-price-threshold').value=n.priceThresholdPct; }
+  if(n.priceReference!=null) document.getElementById('notif-price-reference').value=n.priceReference;
+  const blockOpen=document.getElementById('notif-every-block').checked;
+  const priceOpen=document.getElementById('notif-price-change').checked;
+  if(blockOpen) toggleNotifSub('block-sub',true);
+  if(priceOpen) toggleNotifSub('price-sub',true);
+  const minPct=mon.priceThresholdMinPct??1;
+  const maxPct=mon.priceThresholdMaxPct??50;
+  const devPct=mon.priceRefMaxDeviationPct??20;
+  const thHint=document.getElementById('notif-threshold-hint');
+  const rfHint=document.getElementById('notif-reference-hint');
+  if(thHint) thHint.textContent=`Faixa permitida: ${minPct}% a ${maxPct}%`;
+  validatePriceThreshold();
+  if(rfHint) rfHint.textContent=`Limite: ±${devPct}% do preço atual. Vazio = usa o preço atual.`;
+}
+
+function toggleNotifSub(subId,open){ const el=document.getElementById(subId); if(el) el.classList.toggle('open',!!open); }
+function syncNotifSubs(){
+  toggleNotifSub('block-sub',document.getElementById('notif-every-block')?.checked);
+  toggleNotifSub('price-sub',document.getElementById('notif-price-change')?.checked);
+}
+
+function currentBtcPrice(){ return parseFloat(document.getElementById('price-val')?.textContent?.replace(/[^0-9.]/g,''))||0; }
+
+function validatePriceThreshold(){
+  const val=parseFloat(document.getElementById('notif-price-threshold').value);
+  const warn=document.getElementById('notif-threshold-warn');
+  const valueEl=document.getElementById('notif-threshold-value');
+  const minPct=cfg.monitor?.priceThresholdMinPct??1;
+  const maxPct=cfg.monitor?.priceThresholdMaxPct??50;
+  const refPrice=parseFloat(document.getElementById('notif-price-reference')?.value)||currentBtcPrice();
+  if(val>0&&refPrice>0){ const cur=cfg.general?.currency||'USD'; valueEl.textContent=`≈ ${cur} ${parseFloat((refPrice*val/100).toFixed(2)).toLocaleString('en-US')} de variação`; valueEl.style.display='block'; }
+  else valueEl.style.display='none';
+  if(val>0){
+    if(val<minPct){ warn.textContent=`⚠️ Mínimo: ${minPct}% — corrija antes de salvar`; warn.style.display='block'; return false; }
+    if(val>maxPct){ warn.textContent=`⚠️ Máximo: ${maxPct}% — corrija antes de salvar`; warn.style.display='block'; return false; }
+  }
+  warn.style.display='none'; return true;
+}
+
+function validatePriceReference(){
+  const val=parseFloat(document.getElementById('notif-price-reference').value);
+  const current=currentBtcPrice();
+  const warn=document.getElementById('notif-reference-warn');
+  if(!val||val<=0){ warn.style.display='none'; return true; }
+  const maxDev=(cfg.monitor?.priceRefMaxDeviationPct??20)/100;
+  if(current>0){
+    const lo=current*(1-maxDev),hi=current*(1+maxDev);
+    if(val<lo||val>hi){ const pct=cfg.monitor?.priceRefMaxDeviationPct??20; warn.textContent=`⚠️ Fora de ±${pct}% do preço atual ($${Math.round(lo).toLocaleString('en-US')} – $${Math.round(hi).toLocaleString('en-US')}) — corrija antes de salvar`; warn.style.display='block'; return false; }
+  }
+  warn.style.display='none'; return true;
+}
+
+function validateGapLimit() {
+  const input = document.getElementById('cfg-gap');
+  const val = parseInt(input.value);
+  const warn = document.getElementById('gap-warn');
+  const hint = document.getElementById('gap-hint');
+  
+  if (isNaN(val) || val < 1 || val > 10) {
+    warn.style.display = 'inline';
+    if(hint) hint.style.opacity = '0.5';
+    return false;
+  }
+  warn.style.display = 'none';
+  if(hint) hint.style.opacity = '1';
+  return true;
+}
+
+function validateMaxIndex() {
+  const input = document.getElementById('cfg-max');
+  const val = parseInt(input.value);
+  const warn = document.getElementById('max-warn');
+  const hint = document.getElementById('max-hint');
+  
+  if (isNaN(val) || val < 1 || val > 10000) {
+    warn.style.display = 'inline';
+    if(hint) hint.style.opacity = '0.5';
+    return false;
+  }
+  warn.style.display = 'none';
+  if(hint) hint.style.opacity = '1';
+  return true;
+}
+
+async function saveNotifPrefs(){
+  const threshOk=validatePriceThreshold(); const refOk=validatePriceReference();
+  if(!threshOk||!refOk) return toast('corrija os valores antes de salvar','err');
+  const notifications={everyBlock:document.getElementById('notif-every-block').checked,blockIntervalMin:parseInt(document.getElementById('notif-block-interval').value)||0,priceChange:document.getElementById('notif-price-change').checked,priceThresholdPct:parseFloat(document.getElementById('notif-price-threshold').value)||1,priceReference:parseInt(document.getElementById('notif-price-reference').value)||null};
+  cfg.notifications=notifications; await savePatch({notifications}); clearSettingsDirty(); toast('preferências salvas','ok');
+}
+
+async function testTelegram(){
+  const token=document.getElementById('tg-token').value.trim(); const chatId=document.getElementById('tg-chatid').value.trim();
+  if(!token||!chatId) return toast('preencha token e chat ID','err');
+  const d=await apiFetch('/api/test-telegram',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({token,chatId})});
+  d.ok?toast('mensagem enviada','ok'):toast('falhou: '+d.error,'err');
+}
+
+async function saveTelegram(){
+  const telegram={token:document.getElementById('tg-token').value.trim(),chatId:document.getElementById('tg-chatid').value.trim()};
+  cfg.telegram=telegram; await savePatch({telegram}); clearSettingsDirty(); toast('telegram salvo','ok');
+}
+
+async function saveMonitorCfg(){
+  // 1. Validações visuais e lógicas
+  if (!validateGapLimit()) return toast('valor de Gap Limit inválido (1-10)', 'err');
+  if (!validateMaxIndex()) return toast('Max Index inválido (máx 10.000)', 'err');
+
+  if(!cfg.monitor) cfg.monitor={};
+  
+  const prevGap = cfg.monitor.gapLimit || 10;
+  const newGap = parseInt(document.getElementById('cfg-gap').value) || 10;
+  const newMax = parseInt(document.getElementById('cfg-max').value) || 1000;
+
+  cfg.monitor.gapLimit = newGap;
+  cfg.monitor.maxIndex = newMax;
+
+  if(!cfg.general) cfg.general={};
+  cfg.general.mempoolExplorer = document.getElementById('cfg-mempool').value.trim();
+
+  // Verifica se precisa mostrar o overlay de carregamento (caso mude o gap)
+  const hdWallets = wallets.filter(w => w.descriptor && !w.descriptor.startsWith('addr('));
+  const gapChanged = newGap !== prevGap && hdWallets.length > 0;
+
+  if(gapChanged){
+    const dir = newGap > prevGap ? 'aumentando' : 'reduzindo';
+    showLoading(`${dir} gap limit ${prevGap} → ${newGap}…`);
+    await new Promise(r => setTimeout(r, 100)); // Pequena pausa para o UI renderizar
+  }
+
+  try {
+    // 2. ENVIO EFETIVO PARA O SERVIDOR
+    await savePatch({
+      monitor: { 
+        gapLimit: cfg.monitor.gapLimit, 
+        maxIndex: cfg.monitor.maxIndex 
+      },
+      general: { 
+        mempoolExplorer: cfg.general.mempoolExplorer 
+      }
+    });
+
+    clearSettingsDirty();
+    if(!gapChanged) toast('configuração salva', 'ok');
+    
+  } catch (e) {
+    hideLoading();
+    toast('Erro ao salvar: ' + e.message, 'err');
+  }
+}
+
+async function savePatch(patch){ await apiFetch('/api/config',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(patch)}); }
+async function saveCfg(){ await savePatch(cfg); }
+
+let toastTimer;
+function toast(msg,type='ok'){ const el=document.getElementById('toast'); el.textContent=msg; el.className='toast '+type+' show'; clearTimeout(toastTimer); toastTimer=setTimeout(()=>el.classList.remove('show'),3500); }
+
+// ─── RUNTIME LOCK — overlay controlado pelo servidor ─────────────────────────
+// O panel.js (e o monitor.js via runtime.json) gravam { active, msg, timeoutAt }
+// em /api/runtime-lock.  O painel faz polling desta rota e mantém o overlay
+// visível enquanto active===true, independente de qual janela disparou a operação.
+// Um timeout local (CLIENT_LOCK_TIMEOUT_MS) libera a UI caso o servidor pare
+// de responder — evitando travamento permanente.
+
+const CLIENT_LOCK_TIMEOUT_MS = 200_000; // 200 s — margem acima do timeout do servidor
+let _lockPollTimer  = null;
+let _lockWatchdog   = null;
+let _lockActive     = false;
+// Verdadeiro apenas após o servidor confirmar active===true pelo menos uma vez.
+// Enquanto false, respostas active===false do poll são ignoradas (evita fechar
+// o overlay antes do panel.js ter gravado o lock no runtime.json).
+let _lockConfirmedByServer = false;
+
+const LOCK_POLL_FAST_MS =   300;
+const LOCK_POLL_IDLE_MS = 5_000;
+const LOCK_CLOSE_DELAY_MS = 1_000; // delay fixo antes de fechar o overlay
+
+function showLoading(msg='aguarde...'){
+  document.getElementById('loading-msg').textContent = msg;
+  document.getElementById('loading-overlay').classList.remove('hidden');
+  if(!_lockActive){
+    _lockActive = true;
+    _lockConfirmedByServer = false; // reseta confirmação — aguarda servidor
+    _rescheduleLockPoll();
+  } else {
+    // Já estava ativo — só atualiza a mensagem
+    document.getElementById('loading-msg').textContent = msg;
+  }
+  clearTimeout(_lockWatchdog);
+  _lockWatchdog = setTimeout(()=>{
+    console.warn('runtime lock: watchdog timeout — liberando UI');
+    _forceHideLoading();
+  }, CLIENT_LOCK_TIMEOUT_MS);
+}
+
+function hideLoading(){
+  document.getElementById('loading-overlay').classList.add('hidden');
+  _lockActive = false;
+  _lockConfirmedByServer = false;
+  clearTimeout(_lockWatchdog);
+  _rescheduleLockPoll();
+}
+
+function _forceHideLoading(){
+  hideLoading();
+  toast('operação expirou — verifique o monitor','err');
+}
+
+async function _pollRuntimeLock(){
+  try {
+    const lock = await apiFetch('/api/runtime-lock');
+    if(lock.active){
+      // Servidor confirmou lock — a partir daqui monitoramos a liberação
+      _lockConfirmedByServer = true;
+      showLoading(lock.msg || 'aguarde...');
+    } else if(_lockActive && _lockConfirmedByServer){
+      // Servidor limpou o lock — verifica se foi por falha de conexão Electrum
+      const electrumError = lock.electrumError;
+      setTimeout(async ()=>{
+        hideLoading();
+        await load();
+        if(electrumError){
+          toast(`falha ao conectar ao servidor: ${electrumError}`,'err');
+        } else {
+          toast('operação concluída','ok');
+        }
+      }, LOCK_CLOSE_DELAY_MS);
+    }
+    // Se !_lockConfirmedByServer e active===false: servidor ainda não gravou o
+    // lock (race condition do POST) — ignora e continua polling rápido
+  } catch { /* silencioso */ }
+}
+
+function _rescheduleLockPoll(){
+  clearTimeout(_lockPollTimer);
+  const delay = _lockActive ? LOCK_POLL_FAST_MS : LOCK_POLL_IDLE_MS;
+  _lockPollTimer = setTimeout(async ()=>{
+    await _pollRuntimeLock();
+    _rescheduleLockPoll();
+  }, delay);
+}
+
+function startLockPoll(){
+  if(_lockPollTimer) return;
+  _rescheduleLockPoll();
+}
+function stopLockPoll(){
+  clearTimeout(_lockPollTimer);
+  _lockPollTimer = null;
+}
+
+// Quando a aba volta ao foco, dispara poll imediato sem esperar o próximo tick
+document.addEventListener('visibilitychange', ()=>{
+  if(document.visibilityState === 'visible' && getToken()){
+    clearTimeout(_lockPollTimer);
+    _lockPollTimer = null;
+    _pollRuntimeLock().then(()=>_rescheduleLockPoll());
+  }
+});
+
+// Fila serializada — impede adições/remoções concorrentes de wallet
+let _walletOpQueue=Promise.resolve();
+function queueWalletOp(fn){ _walletOpQueue=_walletOpQueue.then(fn).catch(()=>{}); return _walletOpQueue; }
+
+// Ao carregar a página, verifica se há operação pendente no servidor
+// (ex: reload durante indexação) e retoma o overlay imediatamente
+
+let _pollInterval=null;
+function startPolling(){ if(_pollInterval) return; _pollInterval=setInterval(load,5000); }
+function stopPolling(){ clearInterval(_pollInterval); _pollInterval=null; }
+
+function isBitcoinAddress(str){
+  str=str.trim();
+  if(/^[13][a-km-zA-HJ-NP-Z1-9]{25,34}$/.test(str)) return true;
+  if(/^bc1[ac-hj-np-z02-9]{11,71}$/.test(str)) return true;
+  if(/^tb1[ac-hj-np-z02-9]{11,71}$/.test(str)) return true;
+  if(/^(bc1p|tb1p)[ac-hj-np-z02-9]{8,87}$/.test(str)) return true;
+  return false;
+}
+
+function autoDetectDescriptor(desc){
+  const el=document.getElementById('w-autodetect'); if(!el) return;
+  if(!desc.trim()){ el.style.display='none'; return; }
+  const d=desc.trim().split('#')[0]; let hint='';
+  if(isBitcoinAddress(d)){
+    if(d.startsWith('bc1p')||d.startsWith('tb1p')) hint='🟠 Endereço Taproot (P2TR)';
+    else if(d.startsWith('bc1')||d.startsWith('tb1')) hint='🔵 Endereço SegWit (P2WPKH/P2WSH)';
+    else if(d.startsWith('3')) hint='🟣 Endereço P2SH (3...)';
+    else if(d.startsWith('1')) hint='⚪ Endereço Legacy (1...)';
+    else hint='📌 Endereço Bitcoin';
+  } else if(/^addr\(/.test(d)) hint='📌 Endereço direto (addr)';
+  else if(/^tr\(/.test(d)) hint='🟠 Taproot (P2TR) — bc1p...';
+  else if(/^wpkh\(/.test(d)) hint='🔵 Native SegWit (P2WPKH) — bc1q...';
+  else if(/^sh\(wpkh\(/.test(d)) hint='🟣 Wrapped SegWit (P2SH-P2WPKH) — 3...';
+  else if(/^pkh\(/.test(d)) hint='⚪ Legacy (P2PKH) — 1...';
+  else if(/^wsh\(sortedmulti\(/.test(d)||/^wsh\(multi\(/.test(d)){ const m=d.match(/sortedmulti\((\d+)/)||d.match(/multi\((\d+)/); const keys=(d.match(/xpub|tpub/g)||[]).length; hint="🟢 Multisig "+(m?m[1]:'?')+"-de-"+keys+" (P2WSH)"; }
+  else if(/^sh\(wsh\(/.test(d)) hint='🟤 Multisig Wrapped (P2SH-P2WSH) — 3...';
+  else if(/^wsh\(/.test(d)) hint='🔵 P2WSH — bc1q...';
+  else if(/44h|44[']/.test(d)) hint="⚪ Legacy P2PKH (44') — 1...";
+  else if(/49h|49[']/.test(d)) hint="🟣 Wrapped SegWit (49') — 3...";
+  else if(/84h|84[']/.test(d)) hint="🔵 Native SegWit (84') — bc1q...";
+  else if(/86h|86[']/.test(d)) hint="🟠 Taproot (86') — bc1p...";
+  else if(/48h|48[']/.test(d)) hint="🟢 Multisig (48')";
+  if(hint){ el.textContent=hint; el.style.display='block'; } else el.style.display='none';
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,26 @@
+[
+  {
+    "name": "Umbrel Electrum (50001)",
+    "host": "umbel.local",
+    "port": 50001,
+    "tls": false,
+    "network": "mainnet",
+    "builtin": false
+  },
+  {
+    "name": "Blockstream",
+    "host": "blockstream.info",
+    "port": 700,
+    "tls": true,
+    "network": "mainnet",
+    "builtin": false
+  },  
+  {
+    "name": "Mempool.space",
+    "host": "mempool.space",
+    "port": 50002,
+    "tls": true,
+    "network": "mainnet",
+    "builtin": false
+  }
+]

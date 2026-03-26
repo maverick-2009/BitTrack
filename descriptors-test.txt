@@ -1,0 +1,80 @@
+*Checksum opicional
+>>Single Signature
+
+> Começando com 1... CHJuY9aP8q7zMY1YG1fzJz8hx33iZfmTf (Legacy P2PKH)
+xpub6C1Ra5WPc66UbcY1zN8kdFNuuE8WRuVdcYJmi5Czb7kT1PHYXUvTTSZCEBHw9ZAm58zAtEu932FhSaJyXkoAYAcDkEEx2MV2uV1RDHi5sR2
+*OU*
+[958cba4c/44h/0h/0h]xpub6C1Ra5WPc66UbcY1zN8kdFNuuE8WRuVdcYJmi5Czb7kT1PHYXUvTTSZCEBHw9ZAm58zAtEu932FhSaJyXkoAYAcDkEEx2MV2uV1RDHi5sR2
+*OU*
+pkh([958cba4c/44h/0h/0h]xpub6C1Ra5WPc66UbcY1zN8kdFNuuE8WRuVdcYJmi5Czb7kT1PHYXUvTTSZCEBHw9ZAm58zAtEu932FhSaJyXkoAYAcDkEEx2MV2uV1RDHi5sR2/<0;1>/*)#u57rg270
+
+> Começando com 3... Ko2nNZJ5o3dXnu9rEiPMrnEtKaenRc6xb (Nasted Segwit P2SH-P2WPKH)
+ypub6WsgF6dHAf1F4W8A4R36PT5bjBKgRmBw5b1gwJyxRkeZvYv8dTzYYHxnwMG6prCYJjkLXbuUmb6MTb86xBcJyKi7FvoyEemHv6oJpLL1ip9
+*OU*
+[958cba4c/49h/0h/0h]xpub6C3QwRxN1yTmDCw3E4FUBMz6ZDBEV9CSAUVU9v653kGgsT6uNopyvEJev9JWpwYcu6dXn8JvJvjoaJWYEVCJB62WPb7YejwoeNjfRkXLgnL
+*OU*
+sh(wpkh([958cba4c/49h/0h/0h]xpub6C3QwRxN1yTmDCw3E4FUBMz6ZDBEV9CSAUVU9v653kGgsT6uNopyvEJev9JWpwYcu6dXn8JvJvjoaJWYEVCJB62WPb7YejwoeNjfRkXLgnL/<0;1>/*))#edjp67kx
+
+> Começando bc1q... 70cry8v0nhxwx0zpzaakn9mxghvtq2y3fmnhmw (Native Segwit P2WPKH)
+zpub6rspin7WMu7tiFcAApuMRNeRjimBTNZMmdBsJYfA9xJtYNsWURyfdsLa7imgJPFM2ogkLV3psfDmZYPywgicdWzwvG9KBzCkAekAfSi5x7B
+*OU*
+[fcb59dc7/84h/0h/0h]xpub6DDJ7Smg4Y2w1fDvW7L71CTRPnUHa8aMwQ9RjksPPwZ8SBF3y7eYPk2J5JrWJZwWDXT8qXrhxLWfnyArWHtb33dkBakU2AZmdCcstKmEFxo
+*OU*
+wpkh([fcb59dc7/84h/0h/0h]xpub6DDJ7Smg4Y2w1fDvW7L71CTRPnUHa8aMwQ9RjksPPwZ8SBF3y7eYPk2J5JrWJZwWDXT8qXrhxLWfnyArWHtb33dkBakU2AZmdCcstKmEFxo/<0;1>/*)#tmryp0k6
+
+> Começando bc1p... vdllgl84e5dqgjg86nm9yu6d582sm28f07cyxlj9fj5cfrs578qsyslh8g (Taproot P2TR)
+[958cba4c/86h/0h/0h]xpub6CxCZkcF4pUH2osxfeuScpJntYcnbKNR3KZ1dk53tLhdB9rDa3gwWRo7fQMBvABBZm6whUcgoZm8w6zPCsoaUw3znd1GMbbLvujNKXXj3Mg
+*OU*
+tr([958cba4c/86h/0h/0h]xpub6CxCZkcF4pUH2osxfeuScpJntYcnbKNR3KZ1dk53tLhdB9rDa3gwWRo7fQMBvABBZm6whUcgoZm8w6zPCsoaUw3znd1GMbbLvujNKXXj3Mg/<0;1>/*)#xqgrnccj
+
+
+>> Multi Signature
+
+> Começando com 3... 2NLpEn5jUJHHf1zSbh25jmB8PeV9AAHCR (Legacy P2SH)
+sh(sortedmulti(1,[b52760a5/45h]xpub69Dj3PCiQpet3dfVkmuazrJmaeEKk5Nz4rtJmVHpjfJ9ssxeXCMBy5ED5nwQeV8cwh19nhZ5F53C3LdU2yfiNaLyumkKVoHaT1ixFRDV1qB/<0;1>/*,[769d9c47/45h]xpub68m4itJLQSw1XGYupDQjDKwDiyE3vdAyU1uLoDg61g32NjVV74iBukL4AASg4rk9nYyNxNU6uECHacPQPTYgr6yigipZAxNVuvx3iQ736Be/<0;1>/*))#wk9z2y8c
+*OU*
+sh(sortedmulti(1,Ypub6ex5UHc58TkjKW1zXoAC31k5UQR2u445JF4CU9TFVSWSZALnYFu2gFkGuhrUCq1SaoBwQm9kawnF3nro3uEgKJ9FcaZ9V7a4cU4UDrgjaC4/<0;1>/*,Ypub6eVR9nhh862ro8uQbEfLFVNXcjQm5br4hQ5EVsqWmTFK41sd88G2cvr7z5MjdCcyRfAAaS4nF6wLb4cjQP7enpmzPXdPAGez5PHZgvFkb5g/<0;1>/*))#wk9z2y8c
+*OU*
+sh(sortedmulti(1,[b52760a5/45h]Ypub6ex5UHc58TkjKW1zXoAC31k5UQR2u445JF4CU9TFVSWSZALnYFu2gFkGuhrUCq1SaoBwQm9kawnF3nro3uEgKJ9FcaZ9V7a4cU4UDrgjaC4/<0;1>/*,[769d9c47/45h]
+Ypub6eVR9nhh862ro8uQbEfLFVNXcjQm5br4hQ5EVsqWmTFK41sd88G2cvr7z5MjdCcyRfAAaS4nF6wLb4cjQP7enpmzPXdPAGez5PHZgvFkb5g/<0;1>/*))#wk9z2y8c
+
+> Começando com 3... F5Rzpz4D3Qu2JzMmpGQuCCZT6bvnHbAad (Nasted Segwit P2SH-P2WPKH)
+sh(wsh(sortedmulti(1,[2d4eb89e/48h/0h/0h/1h]xpub6DnhiQRB87HdMywmF2WfRMBjzTW55Ghd3JDcTMxVxYMyob4QTnvHU6CrsvRBDkBKDtEKfbT6uqsBA37FyMtysneeegx3AxvmDJb7oWLSaA4/<0;1>/*,[769d9c47/48h/0h/0h/1h]xpub6EjHncJHQkpU3oxwjAKNkQ68monCsQ1yaMTBEbvyuMBqDFaoo5NVRKTEgEwVUMpBpQfJ3LeCoV3hvX882QmvEPPtDZ16ogjvJZAyyUtFPQk/<0;1>/*)))#2tjh8hyl
+*OU*
+sh(wsh(sortedmulti(1,[2d4eb89e/48h/0h/0h/1h]Ypub6jX49JpXqkPUdrJG23mGTWd3tDgnEFNiGgPWA27viKaGUsSYUrU8BGivhqLEn648rzR7Hf3nFicEAVLazHTwpWSvMVksAHDFNkvdmzxniaU/<0;1>/*,[769d9c47/48h/0h/0h/1h]Ypub6kTeDWhe8PvKKgKSWBZynZXSfZxv2Nh4ojd4wG6Qf8Q7tXxwp8vL8VyJW9rZ2hh1TWr5fQEt9MnkvyMT3LLtB7C9vMovo12QU1WVwwTMuBX/<0;1>/*)))#2tjh8hyl
+*OU*
+sh(wsh(sortedmulti(1,Ypub6jX49JpXqkPUdrJG23mGTWd3tDgnEFNiGgPWA27viKaGUsSYUrU8BGivhqLEn648rzR7Hf3nFicEAVLazHTwpWSvMVksAHDFNkvdmzxniaU/<0;1>/*,Ypub6kTeDWhe8PvKKgKSWBZynZXSfZxv2Nh4ojd4wG6Qf8Q7tXxwp8vL8VyJW9rZ2hh1TWr5fQEt9MnkvyMT3LLtB7C9vMovo12QU1WVwwTMuBX/<0;1>/*)))
+*OU*
+[2d4eb89e/48h/0h/0h/1h]Ypub6jX49JpXqkPUdrJG23mGTWd3tDgnEFNiGgPWA27viKaGUsSYUrU8BGivhqLEn648rzR7Hf3nFicEAVLazHTwpWSvMVksAHDFNkvdmzxniaU
+[769d9c47/48h/0h/0h/1h]Ypub6kTeDWhe8PvKKgKSWBZynZXSfZxv2Nh4ojd4wG6Qf8Q7tXxwp8vL8VyJW9rZ2hh1TWr5fQEt9MnkvyMT3LLtB7C9vMovo12QU1WVwwTMuBX
+*OU*
+Ypub6jX49JpXqkPUdrJG23mGTWd3tDgnEFNiGgPWA27viKaGUsSYUrU8BGivhqLEn648rzR7Hf3nFicEAVLazHTwpWSvMVksAHDFNkvdmzxniaU
+Ypub6kTeDWhe8PvKKgKSWBZynZXSfZxv2Nh4ojd4wG6Qf8Q7tXxwp8vL8VyJW9rZ2hh1TWr5fQEt9MnkvyMT3LLtB7C9vMovo12QU1WVwwTMuBX
+
+> Começando com bc1q... d24cnae94v3yx8j48ew66mfm062em406akmh6xaqyxr5j5f8nqss7rutae (Native Segwit P2WSH)
+Zpub75ESUKxtGQffX7vWMfrYqjs9gwenYo9ciQiK5S4sFKxhWG2KY5c2VaxGMNTE4ySVKk9VzZf2FTLjeGDjNK8JkeKcKZZEMP26yHPkC5gXWZr
+Zpub75SuEoKzzmxgimuszNT7ENdcnffSLTWUQWJCgdRr8w4SWnumGyJr9qf3eAZJyVZDYTsscUKtZmKg8NWAC7NS99zd2JvcCzZZQGCNxzFr81g
+*OU*
+xpub6EfpjktcQ62LPxNtkHpKbVLLdDKdTCV2Zv2CbP1Z7YNXmspxGMtdALn4WFaaWiukGzqud2TnSvF8kXNqdh9L1gqjkR3yn9v8Y6zapvsHzji
+xpub6EtHWEFj8TKMbcNGNzQsz86oiwLHErqtG1c6CaNY19UGnQiQ1FbSpbUqo3gfRF2UViaHEw8emEE5EdfGTVPTQCWkTARMdmTay5oDc1Dm1Pr
+*OU*
+[c335de5d/48h/0h/0h/2h]
+Zpub75ESUKxtGQffX7vWMfrYqjs9gwenYo9ciQiK5S4sFKxhWG2KY5c2VaxGMNTE4ySVKk9VzZf2FTLjeGDjNK8JkeKcKZZEMP26yHPkC5gXWZr
+[d4a3671c/48h/0h/0h/2h]Zpub75SuEoKzzmxgimuszNT7ENdcnffSLTWUQWJCgdRr8w4SWnumGyJr9qf3eAZJyVZDYTsscUKtZmKg8NWAC7NS99zd2JvcCzZZQGCNxzFr81g
+*OU*
+wsh(sortedmulti(1,[c335de5d/48h/0h/0h/2h]Zpub75ESUKxtGQffX7vWMfrYqjs9gwenYo9ciQiK5S4sFKxhWG2KY5c2VaxGMNTE4ySVKk9VzZf2FTLjeGDjNK8JkeKcKZZEMP26yHPkC5gXWZr/<0;1>/*,[d4a3671c/48h/0h/0h/2h]Zpub75SuEoKzzmxgimuszNT7ENdcnffSLTWUQWJCgdRr8w4SWnumGyJr9qf3eAZJyVZDYTsscUKtZmKg8NWAC7NS99zd2JvcCzZZQGCNxzFr81g/<0;1>/*))
+*OU*
+wsh(sortedmulti(1,[c335de5d/48h/0h/0h/2h]xpub6EfpjktcQ62LPxNtkHpKbVLLdDKdTCV2Zv2CbP1Z7YNXmspxGMtdALn4WFaaWiukGzqud2TnSvF8kXNqdh9L1gqjkR3yn9v8Y6zapvsHzji/<0;1>/*,[d4a3671c/48h/0h/0h/2h]xpub6EtHWEFj8TKMbcNGNzQsz86oiwLHErqtG1c6CaNY19UGnQiQ1FbSpbUqo3gfRF2UViaHEw8emEE5EdfGTVPTQCWkTARMdmTay5oDc1Dm1Pr/<0;1>/*))#fdustzfr
+
+>> Miniscript
+
+> Começando com bc1q... 9yfzmnhuvlg65y30a89jvzeh46g6flh4ljr2dj78c5t0zg6l3e7sal5hf7 (index 1)
+wsh(or_i(and_v(v:and_v(v:pkh([00000004/48'/0'/0'/2']xpub6ERiqS1VCxiQ2HWUKLAYGoiQqTSmtimBv6Z3WpNzdGh8TuJvdVkZ7dvCBvn4j4HS13e6cWnpctb6Yw4R9vVhQrpjDEJhv3b4gJc9MJc2qj7/<0;1>/*),pkh([00000005/48'/0'/0'/2']xpub6E9y3hsGi2BwUHv9BYa58EFCnhCJo2jTJTkup1MAM2dK35b1YmSj813MgUAGz4AxnjurWyhPTsnNjkb8m6yQnAT9XXq3A59MffZ5V1XpNhG/<0;1>/*)),older(65535)),or_i(and_v(v:pkh([00000003/48'/0'/0'/2']xpub6DuYwNPLCXcBGoMTWVkWMM6AJDovYsj3LW4UHW4o18qWgoQfbUDDu7v3MmCBuaUykAPCahEJzesNeGcsADUmzN59oCh12Tuj4UyaQFojaJo/<0;1>/*),older(52596)),and_v(v:pk([00000001/48'/0'/0'/2']xpub6DefzNjgq3VgoBrjCbGDvKTuZW7FG1SHsc4pCAUf17Gio7NX79YhsfQN72G48mMnjjyBRcUKBvKLujrRqBrXteQmebiEQjTCuzEZ5kok5EE/<0;1>/*),pk([00000002/48'/0'/0'/2']xpub6Dg1AefuCkbPdmnqqAQ3rrwjDCecYCDZTVLU6XfLugMNvasKtUKsnmvPLxYo7t7TdqRbiuFB6kvJLPdw25MxrwPsbHuLuLM4gG7s29cWAmC/<0;1>/*)))))#fdx04s7p
+
+> Começando com bc1q... k2v8497h9fnjs5m0fldqh8rqsfv6xqkwkujmj2fxa89zxa6x25hqhhk3cu (index 1)
+wsh(andor(pk([00000001/48'/0'/0'/2']xpub6DefzNjgq3VgoBrjCbGDvKTuZW7FG1SHsc4pCAUf17Gio7NX79YhsfQN72G48mMnjjyBRcUKBvKLujrRqBrXteQmebiEQjTCuzEZ5kok5EE/<0;1>/*),pk([00000002/48'/0'/0'/2']xpub6Dg1AefuCkbPdmnqqAQ3rrwjDCecYCDZTVLU6XfLugMNvasKtUKsnmvPLxYo7t7TdqRbiuFB6kvJLPdw25MxrwPsbHuLuLM4gG7s29cWAmC/<0;1>/*),and_v(v:pk([00000006/48'/0'/0'/2']xpub6EwLK49YietqnK1unLsCbejb8D9bgpMYqfPfrr56XP3RsC5JHoW4TsoxihqShYbpHaPpcDiBNKEpuqygvMdxbeXhiu1PA7SzBzNVQXhqY6n/<0;1>/*),older(52560))))
+
+> Começando com bc1q... zkfja3farrx928s857meel8n5u7yvqy4m0ccvgtzfrzpuvxlhfjq955cdq (index 0)
+wsh(or_i(thresh(3,pk([00000001/48'/0'/0'/2']xpub6DefzNjgq3VgoBrjCbGDvKTuZW7FG1SHsc4pCAUf17Gio7NX79YhsfQN72G48mMnjjyBRcUKBvKLujrRqBrXteQmebiEQjTCuzEZ5kok5EE/<0;1>/*),s:pk([00000002/48'/0'/0'/2']xpub6Dg1AefuCkbPdmnqqAQ3rrwjDCecYCDZTVLU6XfLugMNvasKtUKsnmvPLxYo7t7TdqRbiuFB6kvJLPdw25MxrwPsbHuLuLM4gG7s29cWAmC/<0;1>/*),s:pk([00000003/48'/0'/0'/2']xpub6DuYwNPLCXcBGoMTWVkWMM6AJDovYsj3LW4UHW4o18qWgoQfbUDDu7v3MmCBuaUykAPCahEJzesNeGcsADUmzN59oCh12Tuj4UyaQFojaJo/<0;1>/*),s:pk([00000004/48'/0'/0'/2']xpub6ERiqS1VCxiQ2HWUKLAYGoiQqTSmtimBv6Z3WpNzdGh8TuJvdVkZ7dvCBvn4j4HS13e6cWnpctb6Yw4R9vVhQrpjDEJhv3b4gJc9MJc2qj7/<0;1>/*),s:pk([00000005/48'/0'/0'/2']xpub6E9y3hsGi2BwUHv9BYa58EFCnhCJo2jTJTkup1MAM2dK35b1YmSj813MgUAGz4AxnjurWyhPTsnNjkb8m6yQnAT9XXq3A59MffZ5V1XpNhG/<0;1>/*),s:pk([00000006/48'/0'/0'/2']xpub6EwLK49YietqnK1unLsCbejb8D9bgpMYqfPfrr56XP3RsC5JHoW4TsoxihqShYbpHaPpcDiBNKEpuqygvMdxbeXhiu1PA7SzBzNVQXhqY6n/<0;1>/*)),and_v(v:and_v(v:pk([00000004/48'/0'/0'/2']xpub6ERiqS1VCxiQ2HWUKLAYGoiQqTSmtimBv6Z3WpNzdGh8TuJvdVkZ7dvCBvn4j4HS13e6cWnpctb6Yw4R9vVhQrpjDEJhv3b4gJc9MJc2qj7/<0;1>/*),pk([00000005/48'/0'/0'/2']xpub6E9y3hsGi2BwUHv9BYa58EFCnhCJo2jTJTkup1MAM2dK35b1YmSj813MgUAGz4AxnjurWyhPTsnNjkb8m6yQnAT9XXq3A59MffZ5V1XpNhG/<0;1>/*)),older(52560))))
+
+

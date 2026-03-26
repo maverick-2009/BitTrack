@@ -1,0 +1,7 @@
+data/config.json
+data/servers.json
+data/state.json
+data/wallets.json
+data/panel-auth.json
+data/runtime.json
+conversor-xpub.py
