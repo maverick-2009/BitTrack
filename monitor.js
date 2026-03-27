@@ -1,5 +1,5 @@
 /**
- * BitTrack Monitor v5 — Fulcrum/ElectrumX
+ * BitTrack Monitor v5 — Electrum Server
  *
  * Fluxo:
  *   1. Deriva endereços via descritor (BIP380/BIP389/Miniscript)
@@ -359,7 +359,7 @@ async function flushConfirmedBuffer(key) {
 
 function loadState() {
   // Carrega o state persistido da sessão anterior.
-  // O subscribeAll compara o statusHash retornado pelo Fulcrum com o salvo:
+  // O subscribeAll compara o statusHash retornado pelo Electrum Server com o salvo:
   // se iguais, o histórico não mudou offline e getHistory/getBalance são pulados.
   // Se o arquivo não existir ou estiver corrompido, parte do zero.
   try {
@@ -406,7 +406,7 @@ function saveState() {
 // Reconcilia o gapLimit offline: se o gapLimit foi reduzido enquanto o script
 // estava desligado, purga do state e de wallet.addresses os endereços vazios
 // além do novo cutoff — exatamente como o rebalanceGap faria ao vivo.
-// Chamado após loadState() e loadWallets(), antes de conectar ao Fulcrum.
+// Chamado após loadState() e loadWallets(), antes de conectar ao Electrum Server.
 function reconcileGapOnBoot() {
   const currentGap = getCFG().gapLimit;
   const savedGap   = state._meta?.gapLimit ?? currentGap;
@@ -590,7 +590,7 @@ function loadWallets() {
     const startIdx = wallet.startIndex ?? 0;
 
     // Deriva e registra apenas os endereços já conhecidos (de boots anteriores).
-    // O subscribeAll vai derivar mais conforme necessário consultando o Fulcrum.
+    // O subscribeAll vai derivar mais conforme necessário consultando o Electrum Server.
     const isSingleAddress = wallet.descriptor.startsWith('addr(');
 
     const chains = isSingleAddress ? [0] : [0, 1];
@@ -657,7 +657,7 @@ function sendTelegram(text) {
 //   'consolidation'    — toda saída vai para endereços nossos
 //
 // electrum é opcional: se fornecido, usa como fallback para buscar prevouts
-// quando o servidor não os inclui no verbose tx (Fulcrum < 1.9).
+// quando o servidor não os inclui no verbose tx (Electrum Server < 1.9).
 
 async function classifyTx(txData, walletName, network, electrum) {
   const vins  = txData.vin  || [];
@@ -670,7 +670,7 @@ async function classifyTx(txData, walletName, network, electrum) {
   });
 
   // ── Detecta inputs nossos ──────────────────────────────────────────────────
-  // Estratégia 1: vin.prevout.scriptPubKey.hex (Fulcrum >= 1.9, verbose=true)
+  // Estratégia 1: vin.prevout.scriptPubKey.hex (Electrum Server >= 1.9, verbose=true)
   // Estratégia 2: fallback — busca a tx anterior e pega o vout[vin.vout]
   let myInputSats = 0;
   const inputAddrs = new Set();
@@ -864,7 +864,7 @@ ${ts_line}${link}`;
 function msgStartup(addrCount, gapLimit) {
   const _e = getCFG().electrum;
   return `🚀 <b>BitTrack v5 iniciado</b>
-🔌 Fulcrum: <code>${_e.host}:${_e.port}</code>
+🔌 Electrum Server: <code>${_e.host}:${_e.port}</code>
 👀 Endereços: <b>${addrCount}</b>
 🔍 Gap limit: <b>${gapLimit}</b>
 ⚡ Modo: <b>scripthash.subscribe</b>
@@ -926,7 +926,7 @@ class ElectrumClient {
     try { this.socket.setKeepAlive(true, 10000); } catch {}
     this._resetInactivityTimer();
     const _ec = getCFG().electrum;
-    log.ok(`Fulcrum → ${_ec.host}:${_ec.port}${_ec.tls ? ' (TLS)' : ' (TCP)'}`);
+    log.ok(`Electrum Server → ${_ec.host}:${_ec.port}${_ec.tls ? ' (TLS)' : ' (TCP)'}`);
     writeRuntime({ electrum: { connected: true, host: _ec.host, port: _ec.port, tls: _ec.tls, since: Date.now() } });
     resolve();
   }
@@ -1251,7 +1251,7 @@ async function subscribeAll(electrum) {
       const desc  = (chain === 1 && wallet.descriptorChange) ? wallet.descriptorChange : wallet.descriptor;
       const label = chain === 0 ? 'ext' : 'chg';
 
-      // Varredura BIP44: avança sequencialmente, para só quando o Fulcrum
+      // Varredura BIP44: avança sequencialmente, para só quando o Electrum Server
       // confirmar gapLimit endereços vazios consecutivos.
       let consecutiveEmpty = 0;
       let i = startIdx;
@@ -1431,10 +1431,10 @@ async function fetchPrice() {
 
 // ─── MAIN ─────────────────────────────────────────────────────────────────────
 async function run() {
-  log.info('╔══════════════════════════════════════╗');
-  log.info('║  BitTrack Monitor v5 — Fulcrum       ║');
-  log.info('║  scripthash.subscribe + Telegram     ║');
-  log.info('╚══════════════════════════════════════╝');
+  log.info('╔═════════════════════════════════════════╗');
+  log.info('║  BitTrack Monitor v5 — Electrum Server  ║');
+  log.info('║     scripthash.subscribe + Telegram     ║');
+  log.info('╚═════════════════════════════════════════╝');
 
   loadState();
   loadWallets();
@@ -1442,7 +1442,7 @@ async function run() {
 
   const _initCfg = getCFG();
   log.info(`Endereços: ${addrMap.size} | Gap limit: ${_initCfg.gapLimit}`);
-  log.info(`Fulcrum: ${_initCfg.electrum.host}:${_initCfg.electrum.port} ${_initCfg.electrum.tls ? '(TLS)' : '(TCP)'}`);
+  log.info(`Electrum Server: ${_initCfg.electrum.host}:${_initCfg.electrum.port} ${_initCfg.electrum.tls ? '(TLS)' : '(TCP)'}`);
 
   if (!_initCfg.telegram.token || !_initCfg.telegram.chatId)
     log.warn('Telegram não configurado — defina TELEGRAM_TOKEN e TELEGRAM_CHAT_ID');
@@ -1628,7 +1628,7 @@ async function run() {
       if (!intentional) {
         // Falha real de conexão (timeout, recusa, host inválido) — libera o lock
         // imediatamente com o erro para o painel exibir sem esperar o reconnectDelay.
-        log.error(`Fulcrum: ${e.message}`);
+        log.error(`Electrum Server: ${e.message}`);
         writeRuntime({
           lock:     { active: false, msg: '', since: null, timeoutAt: null },
           electrum: { connected: false, error: e.message, since: Date.now() },
