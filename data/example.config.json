@@ -10,7 +10,7 @@
     "chatId": "000000000000"
   },
   "general": {
-    "mempoolExplorer": "https://192.168.0.10:3006/",
+    "mempoolExplorer": "http://192.168.0.10:3006/",
     "currency": "USD",
     "timezone": "America/Sao_Paulo",
     "dateLocale": "pt-BR",

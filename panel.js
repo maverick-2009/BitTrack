@@ -41,12 +41,14 @@ const PANEL_PORT = getPanelPort();
 fs.mkdirSync(dataDir, { recursive: true });
 
 const FILES = {
-  config:  path.join(dataDir, 'config.json'),
-  wallets: path.join(dataDir, 'wallets.json'),
-  servers: path.join(dataDir, 'servers.json'),
-  state:   path.join(dataDir, 'state.json'),
-  auth:    path.join(dataDir, 'panel-auth.json'),
-  runtime: path.join(dataDir, 'runtime.json'),
+  config:       path.join(dataDir, 'config.json'),
+  wallets:      path.join(dataDir, 'wallets.json'),
+  servers:      path.join(dataDir, 'servers.json'),
+  state:        path.join(dataDir, 'state.json'),
+  auth:         path.join(dataDir, 'panel-auth.json'),
+  runtime:      path.join(dataDir, 'runtime.json'),
+  priceHistory: path.join(dataDir, 'historicalprice.json'),
+  txHistory:    path.join(dataDir, 'txhistory.json'),
 };
 
 // Sessões em memória: token → { created }
@@ -560,6 +562,38 @@ const server = http.createServer(async (req, res) => {
     if (!cfg.electrum) return json(res, { ok: false, error: 'nenhum servidor configurado' });
     const { host, port, tls } = cfg.electrum;
     return json(res, await testElectrum(host, port, tls));
+  }
+
+  if (url === '/api/pricehistory') {
+    return json(res, readJSON(FILES.priceHistory, []));
+  }
+
+  if (url === '/api/txhistory') {
+    return json(res, readJSON(FILES.txHistory, {}));
+  }
+
+  // ── Fee estimado via Electrum (runtime.json) ────────────────────────────
+  if (url === '/api/fee') {
+    const rt   = readJSON(FILES.runtime, {});
+    const fees = rt.fees;
+    if (fees && fees.fastestFee) {
+      return json(res, { ok: true, fees });
+    }
+    return json(res, { ok: false, error: 'fees ainda não disponíveis — aguarde o próximo ping do monitor' });
+  }
+
+  // ── Label por wallet ──────────────────────────────────────────────────────
+  if (url.startsWith('/api/wallet-label/') && req.method === 'POST') {
+    if (!checkToken(req)) return unauthorized(res);
+    const walletName = decodeURIComponent(url.slice('/api/wallet-label/'.length));
+    const { label, color } = await bodyJSON(req);
+    const wList = readJSON(FILES.wallets, []);
+    const w = wList.find(x => x.name === walletName);
+    if (!w) return json(res, { ok: false, error: 'carteira não encontrada' }, 404);
+    w.label = label || '';
+    w.labelColor = color || '';
+    writeJSON(FILES.wallets, wList);
+    return json(res, { ok: true });
   }
 
   res.writeHead(404); res.end('not found');

@@ -4,4 +4,6 @@ data/state.json
 data/wallets.json
 data/panel-auth.json
 data/runtime.json
+data/txhistory.json
+data/historicalprice.json
 conversor-xpub.py

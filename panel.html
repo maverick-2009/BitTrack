@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
 <title>BitTrack</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <style>
 :root {
   --bg: #0a0a0a;
@@ -56,10 +57,10 @@ html, body { height: 100%; background: var(--bg); color: var(--text); font-famil
 .card { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 22px; margin-bottom: 16px; }
 .card-label { font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text2); margin-bottom: 16px; font-family: var(--mono); font-weight: 500; }
 
-.metrics { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 20px; }
-.metric { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 18px; }
-.metric-val { font-family: var(--mono); font-size: 28px; font-weight: 500; color: var(--text); }
-.metric-label { font-size: 12px; color: var(--text2); margin-top: 5px; }
+.metrics { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 20px; align-items: stretch; }
+.metric { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 16px 18px; display: flex; flex-direction: column; justify-content: center; }
+.metric-label { font-size: 10px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text3); margin-bottom: 8px; font-family: var(--mono); font-weight: 500; }
+.metric-val { font-family: var(--mono); font-size: 22px; font-weight: 500; color: var(--text); line-height: 1.15; }
 
 .field { margin-bottom: 16px; }
 .field label { display: block; font-size: 12px; color: var(--text2); margin-bottom: 7px; font-family: var(--mono); }
@@ -129,6 +130,38 @@ html, body { height: 100%; background: var(--bg); color: var(--text); font-famil
 .price-dn { background: rgba(248,113,113,0.1); color: var(--red); }
 .price-meta { font-size: 12px; color: var(--text3); margin-top: 7px; font-family: var(--mono); }
 
+
+/* ── Gráficos ───────────────────────────────────────────────────────────────*/
+.chart-wrap { position: relative; width: 100%; height: 220px; }
+@media (max-width: 640px) { .chart-wrap { height: 160px; } }
+
+/* ── Tabela de transações ───────────────────────────────────────────────────*/
+.tx-table { width: 100%; border-collapse: collapse; font-family: var(--mono); font-size: 12px; }
+.tx-table th { text-align: left; padding: 9px 12px; color: var(--text2); font-weight: 500; font-size: 11px; letter-spacing: 0.06em; border-bottom: 1px solid var(--border); }
+.tx-table td { padding: 9px 12px; border-bottom: 1px solid var(--border); color: var(--text2); }
+.tx-table tr:last-child td { border-bottom: none; }
+.tx-table tr:hover td { background: var(--surface2); }
+.tx-type-recv { color: var(--green); }
+.tx-type-sent { color: var(--red); }
+.tx-type-cons { color: var(--blue); }
+.tx-mempool   { color: var(--accent); font-style: italic; }
+.tx-pagination { display: flex; align-items: center; gap: 8px; justify-content: flex-end; margin-top: 14px; flex-wrap: wrap; }
+.tx-pagination button { padding: 5px 11px; border-radius: 4px; font-family: var(--mono); font-size: 11px; cursor: pointer; border: 1px solid var(--border2); background: none; color: var(--text2); }
+.tx-pagination button:hover { color: var(--text); border-color: #555; }
+.tx-pagination button:disabled { opacity: 0.3; cursor: default; }
+.tx-pagination .pg-info { font-family: var(--mono); font-size: 11px; color: var(--text3); }
+@media (max-width: 640px) {
+  .tx-table th:nth-child(4), .tx-table td:nth-child(4) { display: none; }
+  .tx-table td:nth-child(2) { max-width: 90px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+}
+
+/* ── Wallet labels ──────────────────────────────────────────────────────────*/
+.w-label-badge { display: inline-block; padding: 2px 8px; border-radius: 3px; font-size: 11px; font-family: var(--mono); font-weight: 500; margin-left: 6px; vertical-align: middle; }
+.label-edit-row { display: flex; gap: 8px; align-items: center; margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--border); flex-wrap: wrap; }
+.label-color-pick { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
+.label-swatch { width: 18px; height: 18px; border-radius: 3px; cursor: pointer; border: 2px solid transparent; flex-shrink: 0; }
+.label-swatch.active { border-color: var(--text); }
+
 .filters { display: flex; gap: 8px; margin-bottom: 16px; }
 .filters select { padding: 7px 11px; background: var(--surface); border: 1px solid var(--border); border-radius: 5px; color: var(--text2); font-family: var(--mono); font-size: 12px; outline: none; cursor: pointer; }
 .filters select:hover { border-color: var(--border2); color: var(--text); }
@@ -184,7 +217,7 @@ html, body { height: 100%; background: var(--bg); color: var(--text); font-famil
   .nav-icon { width: 20px; height: 20px; }
   .main { padding: 16px; padding-bottom: 80px; order: 1; height: 100vh; overflow-y: auto; }
   .metrics { grid-template-columns: repeat(2, 1fr); }
-  .metric-val { font-size: 20px; }
+  .metric-val { font-size: 16px; }
   .addr-table th:nth-child(1), .addr-table td:nth-child(1) { display: none; }
   .addr-table th:nth-child(3), .addr-table td:nth-child(3) { display: none; }
   .addr-table td:nth-child(4) { font-size: 10px; max-width: 140px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
@@ -245,6 +278,13 @@ html, body { height: 100%; background: var(--bg); color: var(--text); font-famil
         </svg>
         Carteiras
       </div>
+      <div class="nav-item" onclick="nav('transactions')">
+        <svg class="nav-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5">
+          <path d="M2 5h12M2 8h8M2 11h10"/>
+          <path d="M11 2l3 3-3 3" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        Transações
+      </div>
       <div class="nav-item" onclick="nav('addresses')">
         <svg class="nav-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5">
           <path d="M2 4h12M2 8h8M2 12h10"/>
@@ -269,12 +309,44 @@ html, body { height: 100%; background: var(--bg); color: var(--text); font-famil
     <!-- OVERVIEW -->
     <div id="page-overview" class="page active">
       <div class="page-title">// visão geral</div>
-      <div class="metrics">
-        <div class="metric"><div class="metric-val" id="m-wallets">—</div><div class="metric-label">carteiras</div></div>
-        <div class="metric"><div class="metric-val" id="m-addresses">—</div><div class="metric-label">endereços</div></div>
-        <div class="metric"><div class="metric-val" id="m-withbal">—</div><div class="metric-label">com saldo</div></div>
-        <div class="metric"><div class="metric-val" id="m-total">—</div><div class="metric-label">saldo total (BTC)</div></div>
+
+      <!-- Métricas principais -->
+      <div class="metrics" id="metrics-grid">
+        <div class="metric">
+          <div class="metric-label">saldo confirmado (BTC)</div>
+          <div class="metric-val" id="m-total">—</div>
+          <div id="m-mempool-line" style="display:none;font-family:var(--mono);font-size:11px;margin-top:6px"></div>
+        </div>
+        <div class="metric">
+          <div class="metric-label" id="m-total-fiat-label">valor em USD</div>
+          <div class="metric-val" id="m-total-fiat">—</div>
+          <div style="font-size:11px;font-family:var(--mono);color:var(--text3);margin-top:6px">saldo confirmado</div>
+        </div>
+        <div class="metric">
+          <div class="metric-label">carteiras</div>
+          <div class="metric-val" id="m-wallets">—</div>
+          <div style="font-size:11px;font-family:var(--mono);color:var(--text3);margin-top:6px">-</div>
+        </div>
+        <div class="metric" id="m-fees-metric" style="display:none">
+          <div class="metric-label">fees (sat/vB)</div>
+          <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-top:2px">
+            <div style="text-align:center">
+              <div style="font-family:var(--mono);font-size:18px;font-weight:500;color:var(--green);line-height:1.15" id="fee-fast-m">—</div>
+              <div style="font-size:10px;color:var(--text3);font-family:var(--mono);margin-top:3px">rápido</div>
+            </div>
+            <div style="text-align:center;border-left:1px solid var(--border);border-right:1px solid var(--border)">
+              <div style="font-family:var(--mono);font-size:18px;font-weight:500;color:var(--accent);line-height:1.15" id="fee-med-m">—</div>
+              <div style="font-size:10px;color:var(--text3);font-family:var(--mono);margin-top:3px">médio</div>
+            </div>
+            <div style="text-align:center">
+              <div style="font-family:var(--mono);font-size:18px;font-weight:500;color:var(--text2);line-height:1.15" id="fee-slow-m">—</div>
+              <div style="font-size:10px;color:var(--text3);font-family:var(--mono);margin-top:3px">lento</div>
+            </div>
+          </div>
+        </div>
       </div>
+
+      <!-- Preço + gráfico de preço -->
       <div class="card" id="price-card" style="display:none">
         <div class="card-label">preço bitcoin</div>
         <div class="price-display">
@@ -282,10 +354,55 @@ html, body { height: 100%; background: var(--bg); color: var(--text); font-famil
           <div class="price-change" id="price-change">—</div>
         </div>
         <div class="price-meta" id="price-meta">—</div>
+        <div style="height:16px"></div>
+        <div class="chart-wrap"><canvas id="chart-price"></canvas></div>
       </div>
-      <div class="card">
+
+      <!-- Portfólio BTC ao longo do tempo -->
+      <div class="card" id="portfolio-card" style="display:none">
+        <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:14px">
+          <div class="card-label" style="margin:0">portfólio ao longo do tempo (BTC)</div>
+          <select id="pf-filter-wallet" onchange="renderPortfolioChart()" style="padding:5px 9px;background:var(--surface2);border:1px solid var(--border);border-radius:4px;color:var(--text2);font-family:var(--mono);font-size:12px;outline:none">
+            <option value="">todas as carteiras</option>
+          </select>
+        </div>
+        <!-- Etiqueta de mempool pendente — uma linha por carteira -->
+        <div id="pf-mempool-notice" style="display:none;margin-bottom:10px"></div>
+        <div class="chart-wrap"><canvas id="chart-portfolio"></canvas></div>
+      </div>
+
+      <!-- Servidor electrum — sempre por último -->
+       <!-- DESATIVADO TEMPORARIAMENTE -->
+      <div class="card" style="display:none">
         <div class="card-label">servidor electrum</div>
         <div id="ov-server"><div style="color:var(--text3);font-family:var(--mono);font-size:13px">nenhum servidor configurado</div></div>
+      </div>
+    </div>
+
+    <!-- TRANSAÇÕES -->
+    <div id="page-transactions" class="page">
+      <div class="page-title">// transações</div>
+      <div class="card">
+        <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:14px">
+          <div class="card-label" style="margin:0">histórico de transações</div>
+          <select id="tx-filter-wallet" onchange="renderTxHistory()" style="padding:5px 9px;background:var(--surface2);border:1px solid var(--border);border-radius:4px;color:var(--text2);font-family:var(--mono);font-size:12px;outline:none">
+            <option value="">todas as carteiras</option>
+          </select>
+        </div>
+        <div style="overflow-x:auto">
+          <table class="tx-table">
+            <thead><tr>
+              <th>tipo</th><th>carteira</th><th style="text-align:right">valor (BTC)</th>
+              <th>txid</th><th>bloco / status</th>
+            </tr></thead>
+            <tbody id="tx-tbody"></tbody>
+          </table>
+        </div>
+        <div class="tx-pagination">
+          <button id="tx-prev" onclick="txPage(-1)" disabled>‹ anterior</button>
+          <span class="pg-info" id="tx-pginfo"></span>
+          <button id="tx-next" onclick="txPage(1)">próxima ›</button>
+        </div>
       </div>
     </div>
 
@@ -494,9 +611,36 @@ html, body { height: 100%; background: var(--bg); color: var(--text); font-famil
   <div class="loading-msg" id="loading-msg">aguarde...</div>
 </div>
 <div class="toast" id="toast"></div>
+
+<!-- Modal de confirmação customizado (substitui window.confirm no mobile) -->
+<div id="confirm-modal" style="display:none;position:fixed;inset:0;z-index:600;background:rgba(0,0,0,0.7);backdrop-filter:blur(2px);align-items:center;justify-content:center">
+  <div style="background:var(--surface2);border:1px solid var(--border2);border-radius:8px;padding:24px;max-width:320px;width:90%;font-family:var(--mono)">
+    <div id="confirm-msg" style="color:var(--text);font-size:14px;margin-bottom:20px;line-height:1.5"></div>
+    <div style="display:flex;gap:10px;justify-content:flex-end">
+      <button onclick="confirmResolve(false)" style="padding:8px 18px;border-radius:5px;border:1px solid var(--border2);background:none;color:var(--text2);font-family:var(--mono);font-size:13px;cursor:pointer">cancelar</button>
+      <button onclick="confirmResolve(true)" style="padding:8px 18px;border-radius:5px;border:none;background:var(--red);color:#fff;font-family:var(--mono);font-size:13px;cursor:pointer;font-weight:500">remover</button>
+    </div>
+  </div>
+</div>
 <script>
 const API = '';
 let cfg = {}, servers = [], wallets = [], state = {};
+let priceHistory = [], txHistory = {}, feeData = null;
+
+// ── Modal de confirmação (substitui window.confirm — bloqueado no mobile) ──
+let _confirmResolve = null;
+function confirmModal(msg) {
+  return new Promise(resolve => {
+    _confirmResolve = resolve;
+    document.getElementById('confirm-msg').textContent = msg;
+    const modal = document.getElementById('confirm-modal');
+    modal.style.display = 'flex';
+  });
+}
+function confirmResolve(result) {
+  document.getElementById('confirm-modal').style.display = 'none';
+  if(_confirmResolve) { _confirmResolve(result); _confirmResolve = null; }
+}
 
 function doLogin() {
   const pw = document.getElementById('login-pw').value;
@@ -565,19 +709,42 @@ window.addEventListener('load',()=>{
 
 async function load(){
   try {
-    const [c,srv,w,st]=await Promise.all([apiFetch('/api/config'),apiFetch('/api/servers'),apiFetch('/api/wallets'),apiFetch('/api/state')]);
+    const [c,srv,w,st,ph,th]=await Promise.all([
+      apiFetch('/api/config'),
+      apiFetch('/api/servers'),
+      apiFetch('/api/wallets'),
+      apiFetch('/api/state'),
+      apiFetch('/api/pricehistory').catch(()=>[]),
+      apiFetch('/api/txhistory').catch(()=>{}),
+    ]);
     cfg    =(c  &&typeof c ==='object'&&!Array.isArray(c)) ?c :cfg;
     servers=Array.isArray(srv)?srv:servers;
     wallets=Array.isArray(w)?w:wallets;
     state  =(st &&typeof st==='object'&&!Array.isArray(st))?st:state;
+    priceHistory=Array.isArray(ph)?ph:priceHistory;
+    txHistory=(th&&typeof th==='object'&&!Array.isArray(th))?th:txHistory;
+    // Fee: busca separada, não bloqueia o carregamento principal
+    apiFetch('/api/fee').then(d=>{ if(d.ok){ feeData=d.fees; renderFee(); } }).catch(()=>{});
     render();
   } catch(e){ toast('erro ao carregar: '+e.message,'err'); }
 }
 
 function render(){
-  renderOverview(); renderWallets(); renderAddresses(); renderServers();
+  renderOverview(); renderServers(); renderAddresses();
+  if(!_walletEditActive()) renderWallets();
+  // renderTxHistory só quando a aba estiver visível (evita trabalho desnecessário)
+  if(document.getElementById('page-transactions')?.classList.contains('active')) renderTxHistory();
   if(!_settingsActive||_settingsFocused()||_settingsDirty) return;
   renderSettings();
+}
+
+// Retorna true se o foco estiver dentro da área de edição de carteiras
+// OU se houver cores alteradas ainda não salvas — ambos bloqueiam o re-render do polling
+function _walletEditActive(){
+  if(_pendingColorChange.size > 0) return true;
+  const a = document.activeElement;
+  if(!a) return false;
+  return !!(document.getElementById('wallet-list')?.contains(a));
 }
 
 let _settingsActive=false, _settingsDirty=false;
@@ -592,53 +759,389 @@ function nav(id){
   event.currentTarget.classList.add('active');
   _settingsActive=(id==='settings');
   if(id==='addresses') renderAddresses();
+  if(id==='transactions') renderTxHistory();
   if(id==='settings'){ _settingsDirty=false; renderSettings(); syncNotifSubs(); }
 }
 
 function renderOverview(){
   const allAddrs=flatState();
   const withBal=allAddrs.filter(a=>a.balanceSat>0);
-  const total=allAddrs.reduce((s,a)=>s+(a.balanceSat||0),0);
+
+  // Saldo confirmado = soma dos balanceSat (Electrum já desconta mempool do balance)
+  // Mempool pendente = soma dos mempoolTxids que ainda não estão em txids confirmados
+  // O Electrum inclui unconfirmed no balance, então calculamos separado via txHistory
+  const confirmedSat = allAddrs.reduce((s,a)=>s+(a.balanceSat||0),0);
+  const confirmedBtc = confirmedSat/1e8;
+
+  // Mempool pendente por carteira — lido do txHistory
+  const mempoolByWallet = {};
+  for(const [wName, wData] of Object.entries(txHistory)){
+    if(!wData?.txids) continue;
+    for(const tx of Object.values(wData.txids)){
+      if(!tx.mempool) continue;
+      mempoolByWallet[wName] = (mempoolByWallet[wName]||0) + (tx.valueSat||0);
+    }
+  }
+  const mempoolEntries = Object.entries(mempoolByWallet).filter(([,v])=>v!==0);
+  const mempoolTotalSat = mempoolEntries.reduce((s,[,v])=>s+v,0);
+
   document.getElementById('m-wallets').textContent=wallets.length;
-  document.getElementById('m-addresses').textContent=allAddrs.length;
-  document.getElementById('m-withbal').textContent=withBal.length;
-  document.getElementById('m-total').textContent=(total/1e8).toFixed(8);
+  const _mwb=document.getElementById('m-withbal'); if(_mwb) _mwb.textContent=withBal.length;
+  document.getElementById('m-total').textContent=confirmedBtc.toFixed(8);
+
+  // Sub-linha de mempool no card de saldo
+  const mempoolLine = document.getElementById('m-mempool-line');
+  if(mempoolLine){
+    if(mempoolEntries.length){
+      const sign = mempoolTotalSat>=0?'+':'-';
+      const btc = (Math.abs(mempoolTotalSat)/1e8).toFixed(8);
+      const col = mempoolTotalSat>=0 ? 'var(--green)' : 'var(--red)';
+      const tip = mempoolEntries.map(([w,v])=>{
+        const s=v>=0?'+':'-';
+        return `${s}${(Math.abs(v)/1e8).toFixed(8)} ${w}`;
+      }).join(' · ');
+      mempoolLine.title = tip;
+      mempoolLine.innerHTML = `<span style="color:${col}">⏳ ${sign}${btc} BTC na mempool</span>`;
+      mempoolLine.style.display='block';
+    } else {
+      mempoolLine.style.display='none';
+    }
+  }
+
+  // Valor em fiat (só saldo confirmado)
+  const priceNow = _lastKnownPrice;
+  const cur = cfg.general?.currency||'USD';
+  const sym = cur==='BRL'?'R$':cur==='EUR'?'€':'$';
+  const fiatEl = document.getElementById('m-total-fiat');
+  const fiatLbl = document.getElementById('m-total-fiat-label');
+  if(priceNow && fiatEl){
+    fiatEl.textContent = sym + (confirmedBtc*priceNow).toLocaleString('en-US',{maximumFractionDigits:0});
+    if(fiatLbl) fiatLbl.textContent=`valor em ${cur}`;
+  } else if(fiatEl){
+    fiatEl.textContent='—';
+    if(fiatLbl) fiatLbl.textContent=`valor em ${cur}`;
+  }
+
+  
   const sel=cfg.electrum;
   const ovSrv=document.getElementById('ov-server');
   if(sel&&sel.host){
-    const isLocal=sel.host.startsWith('192.168')||sel.host==='localhost';
-    const dotColor=isLocal?'var(--green)':'var(--blue)';
-    const dotShadow=isLocal?'box-shadow:0 0 6px var(--green)':'';
     ovSrv.innerHTML=`<div style="display:flex;align-items:center;gap:12px">
-      <span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:${dotColor};${dotShadow};flex-shrink:0"></span>
-      <div><div style="font-size:14px;font-weight:500;color:var(--text)">${sel.name||sel.host}</div>
-      <div style="font-family:var(--mono);font-size:12px;color:var(--text2);margin-top:3px">${sel.host}:${sel.port} · ${sel.tls?'TLS':'TCP'}</div></div></div>`;
+      <span id="ov-conn-dot" style="display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--text3);flex-shrink:0;transition:background .3s"></span>
+      <div>
+        <div style="font-size:14px;font-weight:500;color:var(--text)">${sel.name||sel.host}</div>
+        <div style="font-family:var(--mono);font-size:12px;color:var(--text2);margin-top:3px">${sel.host}:${sel.port} · ${sel.tls?'TLS':'TCP'}</div>
+      </div>
+    </div>`;
     document.getElementById('conn-dot').className='status-dot';
     document.getElementById('conn-text').textContent='testando...';
     apiFetch('/api/server-status').then(d=>{
-      document.getElementById('conn-dot').className='status-dot '+(d.ok?'ok':'err');
-      document.getElementById('conn-text').textContent=d.ok?sel.host.slice(0,18):'sem conexão';
-    }).catch(()=>{ document.getElementById('conn-dot').className='status-dot err'; document.getElementById('conn-text').textContent='erro'; });
+      const ok=d.ok;
+      const od=document.getElementById('ov-conn-dot');
+      if(od){ od.style.background=ok?'var(--green)':'var(--red)'; od.style.boxShadow=ok?'0 0 6px var(--green)':'none'; }
+      document.getElementById('conn-dot').className='status-dot '+(ok?'ok':'err');
+      document.getElementById('conn-text').textContent=ok?sel.host.slice(0,18):'sem conexão';
+    }).catch(()=>{
+      const od=document.getElementById('ov-conn-dot');
+      if(od){ od.style.background='var(--red)'; od.style.boxShadow='none'; }
+      document.getElementById('conn-dot').className='status-dot err';
+      document.getElementById('conn-text').textContent='erro';
+    });
   } else {
     ovSrv.innerHTML='<div style="color:var(--text3);font-family:var(--mono);font-size:13px">nenhum servidor selecionado</div>';
     document.getElementById('conn-dot').className='status-dot err';
     document.getElementById('conn-text').textContent='não configurado';
   }
   fetchPrice();
+  renderPriceChart();
+  renderPortfolioChart();
 }
+
+// Preço atual em memória — usado para calcular valor fiat nas métricas
+let _lastKnownPrice = 0;
 
 async function fetchPrice(){
   try {
     const d=await apiFetch('/api/price'); if(!d.ok) return;
     const price=d.usd;
+    _lastKnownPrice = price;
     const updatedSec=d.updatedAt?Math.round((Date.now()-d.updatedAt)/1000):null;
     const ageLabel=updatedSec!==null?(updatedSec<60?`${updatedSec}s atrás`:`${Math.round(updatedSec/60)}min atrás`):'—';
-    document.getElementById('price-val').textContent='$'+price.toLocaleString('en-US',{maximumFractionDigits:0});
+    const cur=cfg.general?.currency||'USD';
+    const sym=cur==='BRL'?'R$':cur==='EUR'?'€':'$';
+    document.getElementById('price-val').textContent=sym+price.toLocaleString('en-US',{maximumFractionDigits:0});
     const el=document.getElementById('price-change'); el.textContent='ao vivo'; el.className='price-change price-up';
-    document.getElementById('price-meta').textContent=`bitcoin · USD · atualizado ${ageLabel}`;
+    document.getElementById('price-meta').textContent=`bitcoin · ${cur} · atualizado ${ageLabel}`;
     document.getElementById('price-card').style.display='block';
+    // Atualiza valor fiat nas métricas sem re-renderizar tudo
+    const allAddrs2=flatState();
+    const confirmedSat2=allAddrs2.reduce((s,a)=>s+(a.balanceSat||0),0);
+    const fiatEl=document.getElementById('m-total-fiat');
+    if(fiatEl) fiatEl.textContent=sym+(confirmedSat2/1e8*price).toLocaleString('en-US',{maximumFractionDigits:0});
+    const fiatLbl2=document.getElementById('m-total-fiat-label');
+    if(fiatLbl2) fiatLbl2.textContent=`valor em ${cur}`;
   } catch{}
 }
+
+function renderFee(){
+  if(!feeData) return;
+  const fast=feeData.fastestFee||feeData.halfHourFee||'—';
+  const med =feeData.halfHourFee||feeData.hourFee||'—';
+  const slow=feeData.hourFee||feeData.economyFee||'—';
+  const mf=document.getElementById('m-fees-metric');
+  if(mf){
+    document.getElementById('fee-fast-m').textContent=fast;
+    document.getElementById('fee-med-m').textContent=med;
+    document.getElementById('fee-slow-m').textContent=slow;
+    mf.style.display='flex';
+  }
+}
+
+// ── Gráfico de Preço ──────────────────────────────────────────────────────────
+let _chartPrice = null;
+function renderPriceChart(){
+  if(!priceHistory||!priceHistory.length) return;
+  const canvas = document.getElementById('chart-price');
+  if(!canvas) return;
+  const cur = cfg.general?.currency||'USD';
+
+  // Decima pontos se houver muitos (mantém até 500 para performance)
+  let pts = priceHistory;
+  if(pts.length > 500){
+    const step = Math.ceil(pts.length/500);
+    pts = pts.filter((_,i)=>i%step===0);
+    // garante que o último ponto (mais recente) sempre aparece
+    if(pts[pts.length-1]!==priceHistory[priceHistory.length-1])
+      pts.push(priceHistory[priceHistory.length-1]);
+  }
+
+  const labels = pts.map(p=>{
+    const d=new Date(p.t);
+    return d.toLocaleString('pt-BR',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit',hour12:false});
+  });
+  const data = pts.map(p=>p.p);
+
+  const style = getComputedStyle(document.documentElement);
+  const accent= style.getPropertyValue('--accent').trim()||'#f0c040';
+  const border= style.getPropertyValue('--border').trim()||'#2a2a2a';
+  const text2 = style.getPropertyValue('--text2').trim()||'#aaaaaa';
+
+  if(_chartPrice){ _chartPrice.destroy(); _chartPrice=null; }
+  _chartPrice = new Chart(canvas,{
+    type:'line',
+    data:{
+      labels,
+      datasets:[{
+        data,
+        borderColor: accent,
+        borderWidth: 1.5,
+        pointRadius: 0,
+        tension: 0.3,
+        fill: true,
+        backgroundColor: ctx=>{
+          const g=ctx.chart.ctx.createLinearGradient(0,0,0,ctx.chart.height);
+          g.addColorStop(0,'rgba(240,192,64,0.18)');
+          g.addColorStop(1,'rgba(240,192,64,0)');
+          return g;
+        },
+      }]
+    },
+    options:{
+      responsive:true,
+      maintainAspectRatio:false,
+      animation:false,
+      plugins:{
+        legend:{display:false},
+        tooltip:{
+          mode:'index',intersect:false,
+          backgroundColor:'#1c1c1c',borderColor:border,borderWidth:1,
+          titleColor:text2,bodyColor:accent,
+          callbacks:{
+            title:items=>labels[items[0].dataIndex],
+            label:item=>`${cur} ${item.raw.toLocaleString('en-US',{maximumFractionDigits:0})}`,
+          }
+        }
+      },
+      scales:{
+        x:{
+          ticks:{color:text2,font:{size:10},maxTicksLimit:6,maxRotation:0},
+          grid:{color:border},
+        },
+        y:{
+          ticks:{color:text2,font:{size:10},callback:v=>`${cur} ${(v/1000).toFixed(0)}k`},
+          grid:{color:border},
+        }
+      }
+    }
+  });
+}
+
+// ── Gráfico de Portfólio ──────────────────────────────────────────────────────
+let _chartPortfolio = null;
+function renderPortfolioChart(){
+  if(!Object.keys(txHistory).length) return;
+  const canvas = document.getElementById('chart-portfolio');
+  if(!canvas) return;
+  const card = document.getElementById('portfolio-card');
+  const notice = document.getElementById('pf-mempool-notice');
+
+  // Popula select de filtro por carteira (sem resetar seleção atual)
+  const pfSel = document.getElementById('pf-filter-wallet');
+  if(pfSel){
+    const curVal = pfSel.value;
+    const walletNames = Object.keys(txHistory);
+    pfSel.innerHTML='<option value="">todas as carteiras</option>';
+    walletNames.forEach(n=>{
+      const o=document.createElement('option');
+      o.value=n; o.textContent=n;
+      if(n===curVal) o.selected=true;
+      pfSel.appendChild(o);
+    });
+  }
+
+  const filterWallet = pfSel?.value||'';
+
+  // Coleta apenas transações CONFIRMADAS do filtro selecionado
+  const confirmed = [];
+  // mempoolByWallet: { walletName -> satAmount }
+  const mempoolByWallet = {};
+
+  for(const [wName, wData] of Object.entries(txHistory)){
+    if(filterWallet && wName!==filterWallet) continue;
+    if(!wData.txids) continue;
+    for(const [txid, tx] of Object.entries(wData.txids)){
+      if(tx.dropped) continue; // ignorar txs dropped/RBF — não afetam saldo real
+      if(tx.mempool){
+        mempoolByWallet[wName] = (mempoolByWallet[wName]||0) + (tx.valueSat||0);
+      } else {
+        confirmed.push({...tx, txid, wallet: wName});
+      }
+    }
+  }
+
+  // Etiqueta de mempool — linha por carteira quando "todas", linha única quando filtro ativo
+  const mempoolEntries = Object.entries(mempoolByWallet).filter(([,v])=>v!==0);
+  if(notice){
+    if(mempoolEntries.length){
+      const lines = mempoolEntries.map(([wName, sat])=>{
+        const isPositive = sat >= 0;
+        const sign = isPositive ? '+' : '-';
+        const btc = (Math.abs(sat)/1e8).toFixed(8);
+        const valColor = isPositive ? 'var(--green)' : 'var(--red)';
+        return `<div style="padding:5px 12px;display:flex;align-items:baseline;gap:8px">
+          <span style="color:${valColor};font-weight:500;font-family:var(--mono)">${sign}${btc} BTC</span>
+          <span style="color:var(--text3);font-size:11px">mempool${filterWallet?'':` · ${wName}`}</span>
+        </div>`;
+      }).join('');
+      notice.innerHTML=`<div style="background:rgba(240,192,64,0.06);border:1px solid rgba(240,192,64,0.2);border-radius:5px;font-family:var(--mono);font-size:12px;margin-bottom:12px">
+        <div style="padding:6px 12px 2px;font-size:10px;letter-spacing:0.08em;text-transform:uppercase;color:var(--text3)">⏳ aguardando confirmação</div>
+        ${lines}
+      </div>`;
+      notice.style.display='block';
+    } else {
+      notice.style.display='none';
+    }
+  }
+
+  if(!confirmed.length){ card.style.display=(mempoolEntries.length>0)?'block':'none'; return; }
+  card.style.display='block';
+
+  // Ordena cronologicamente por height
+  confirmed.sort((a,b)=>{
+    if((a.height||0)!==(b.height||0)) return (a.height||0)-(b.height||0);
+    return (a.ts||0)-(b.ts||0);
+  });
+
+  // Acumula saldo confirmado ponto a ponto
+  let running = 0;
+  const ptLabels=[], ptData=[];
+  for(const ev of confirmed){
+    running += ev.valueSat||0;
+    ptLabels.push(`#${ev.height}`);
+    ptData.push(+(running/1e8).toFixed(8));
+  }
+
+  // Eixo Y: min=0 (ou mínimo se houver saldo negativo), max=máximo histórico
+  const maxVal = Math.max(...ptData, 0);
+  const minVal = Math.min(...ptData, 0);
+
+  const style=getComputedStyle(document.documentElement);
+  const green=style.getPropertyValue('--green').trim()||'#4ade80';
+  const border=style.getPropertyValue('--border').trim()||'#2a2a2a';
+  const text2=style.getPropertyValue('--text2').trim()||'#aaaaaa';
+
+  if(_chartPortfolio){ _chartPortfolio.destroy(); _chartPortfolio=null; }
+
+  _chartPortfolio = new Chart(canvas,{
+    type:'line',
+    data:{
+      labels:ptLabels,
+      datasets:[{
+        label:'saldo confirmado',
+        data:ptData,
+        borderColor:green,
+        borderWidth:2,
+        pointRadius: ptData.length<=60?3:0,
+        pointBackgroundColor:green,
+        tension:0.1,
+        fill:true,
+        backgroundColor:ctx=>{
+          const g=ctx.chart.ctx.createLinearGradient(0,0,0,ctx.chart.height);
+          g.addColorStop(0,'rgba(74,222,128,0.18)');
+          g.addColorStop(1,'rgba(74,222,128,0)');
+          return g;
+        },
+      }]
+    },
+    options:{
+      responsive:true,
+      maintainAspectRatio:false,
+      animation:false,
+      plugins:{
+        legend:{display:false},
+        tooltip:{
+          mode:'index',intersect:false,
+          backgroundColor:'#1c1c1c',borderColor:border,borderWidth:1,
+          titleColor:text2,bodyColor:green,
+          callbacks:{
+            label:item=>`${item.raw.toFixed(8)} BTC`,
+          }
+        }
+      },
+      scales:{
+        x:{
+          ticks:{color:text2,font:{size:10},maxTicksLimit:8,maxRotation:0},
+          grid:{color:border},
+        },
+        y:{
+          min: minVal>=0?0:minVal,
+          suggestedMax: maxVal*1.05||1,
+          ticks:{color:text2,font:{size:10},callback:v=>v.toFixed(4)},
+          grid:{color:border},
+        }
+      }
+    }
+  });
+}
+
+// Cores disponíveis para labels
+const LABEL_COLORS=[
+  {id:'amber',  bg:'rgba(240,192,64,0.15)',  fg:'#f0c040'},
+  {id:'green',  bg:'rgba(74,222,128,0.15)',  fg:'#4ade80'},
+  {id:'blue',   bg:'rgba(96,165,250,0.15)',  fg:'#60a5fa'},
+  {id:'red',    bg:'rgba(248,113,113,0.15)', fg:'#f87171'},
+  {id:'purple', bg:'rgba(167,139,250,0.15)', fg:'#a78bfa'},
+  {id:'cyan',   bg:'rgba(34,211,238,0.15)',  fg:'#22d3ee'},
+];
+
+function labelBadgeHtml(w){
+  if(!w.label) return '';
+  const col=LABEL_COLORS.find(c=>c.id===w.labelColor)||LABEL_COLORS[0];
+  return `<span class="w-label-badge" style="background:${col.bg};color:${col.fg}">${w.label}</span>`;
+}
+
+// Conjunto de índices com cor alterada mas ainda não salva — protege contra re-render do polling
+const _pendingColorChange = new Set();
 
 function renderWallets(){
   const el=document.getElementById('wallet-list');
@@ -646,26 +1149,79 @@ function renderWallets(){
   el.innerHTML=wallets.map((w,i)=>{
     const notifyMempool=w.notify?.mempoolPending!==false;
     const notifyConfirm=w.notify?.txConfirmed!==false;
-    return `<div class="wallet-item">
+    const activeColor = w.labelColor||'amber';
+    const swatches=LABEL_COLORS.map(c=>
+      `<span class="label-swatch${activeColor===c.id?' active':''}"
+        style="background:${c.fg};opacity:${activeColor===c.id?'1':'0.35'};border:2px solid ${activeColor===c.id?'#fff':'transparent'}"
+        onclick="setLabelColor(${i},'${c.id}')" title="${c.id}"></span>`
+    ).join('');
+    // Nome com badge colorido (fundo + texto)
+    const col=LABEL_COLORS.find(c=>c.id===activeColor)||LABEL_COLORS[0];
+    const walletNameHtml=`<span class="w-label-badge" style="background:${col.bg};color:${col.fg};font-size:14px;font-weight:500;padding:3px 10px">${w.name}</span>`;
+    return `<div class="wallet-item" id="wi-${i}">
       <div class="wallet-header">
-        <div class="wallet-name">${w.name}</div>
+        <div class="wallet-name">${walletNameHtml}</div>
         <button class="btn btn-sm btn-danger" onclick="removeWallet(${i})">remover</button>
       </div>
       <div class="wallet-desc" style="white-space:pre-wrap;word-break:break-all;overflow:visible;font-size:13px;line-height:1.7;color:var(--text2)">${w.descriptor}</div>
       <div class="wallet-meta">startIndex: ${w.startIndex??0} · mainnet</div>
+      <div class="label-edit-row">
+        <span style="font-size:11px;color:var(--text3);font-family:var(--mono);margin-right:4px">cor:</span>
+        <div class="label-color-pick">${swatches}</div>
+        <button class="btn btn-sm" onclick="saveLabel(${i})">salvar cor</button>
+      </div>
       <div class="wallet-notif">
-        <div style="font-size:11px;color:var(--text3);font-family:var(--mono);width:100%;margin-bottom:6px;letter-spacing:0.06em;text-transform:uppercase">Notificações Telegram</div>
         <div class="wallet-notif-item">
-          <label class="wn-toggle"><input type="checkbox" ${notifyMempool?'checked':''} onchange="toggleWalletNotif(${i},'mempoolPending',this.checked)"/><span class="wn-slider"></span></label>
-          <div class="wn-label"><span class="wn-title">📥 Transação na mempool</span><span class="wn-desc">alerta quando lançada na fila (não confirmada)</span></div>
+          <label class="wn-toggle"><input type="checkbox" ${notifyMempool?'checked':''} onchange="toggleWalletNotif(${i},'mempoolPending',this.checked)"><span class="wn-slider"></span></label>
+          <div class="wn-label"><span class="wn-title">mempool</span><span class="wn-desc">entrada na fila</span></div>
         </div>
         <div class="wallet-notif-item">
-          <label class="wn-toggle"><input type="checkbox" ${notifyConfirm?'checked':''} onchange="toggleWalletNotif(${i},'txConfirmed',this.checked)"/><span class="wn-slider"></span></label>
-          <div class="wn-label"><span class="wn-title">✅ Transação confirmada</span><span class="wn-desc">alerta quando incluída em um bloco</span></div>
+          <label class="wn-toggle"><input type="checkbox" ${notifyConfirm?'checked':''} onchange="toggleWalletNotif(${i},'txConfirmed',this.checked)"><span class="wn-slider"></span></label>
+          <div class="wn-label"><span class="wn-title">confirmação</span><span class="wn-desc">tx confirmada</span></div>
         </div>
       </div>
     </div>`;
   }).join('');
+  // Limpa pendências ao re-renderizar (a re-renderização já reflete o estado em memória)
+  _pendingColorChange.clear();
+}
+
+function setLabelColor(i,colorId){
+  const w=wallets[i]; if(!w) return;
+  w.labelColor=colorId;
+  // Marca como pendente — impede que o polling sobrescreva até salvar
+  _pendingColorChange.add(i);
+
+  const item=document.getElementById(`wi-${i}`);
+  if(!item) return;
+  const col=LABEL_COLORS.find(c=>c.id===colorId)||LABEL_COLORS[0];
+
+  // Atualiza swatches
+  item.querySelectorAll('.label-swatch').forEach((s,si)=>{
+    const c=LABEL_COLORS[si];
+    s.style.opacity=c.id===colorId?'1':'0.35';
+    s.style.borderColor=c.id===colorId?'#fff':'transparent';
+  });
+
+  // Atualiza badge do nome (fundo + texto)
+  const nameEl=item.querySelector('.wallet-name .w-label-badge');
+  if(nameEl){
+    nameEl.style.background=col.bg;
+    nameEl.style.color=col.fg;
+  }
+}
+
+async function saveLabel(i){
+  const w=wallets[i]; if(!w) return;
+  const color=w.labelColor||'amber';
+  try {
+    await apiFetch(`/api/wallet-label/${encodeURIComponent(w.name)}`,{
+      method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({label:'',color})
+    });
+    _pendingColorChange.delete(i); // limpa pendência após salvar
+    toast(`cor da carteira "${w.name}" salva`,'ok');
+  } catch(e){ toast('erro ao salvar cor: '+e.message,'err'); }
 }
 
 async function toggleWalletNotif(i,key,value){
@@ -743,6 +1299,7 @@ async function saveWallet(){
         network: 'mainnet',
         startIndex: parseInt(document.getElementById('w-start').value)||0,
         descriptor: normalized,
+        labelColor: 'amber',
         notify: { mempoolPending: true, txConfirmed: true }
       };
       _normalizedDescriptor=null;
@@ -763,7 +1320,8 @@ async function saveWallet(){
 }
 
 async function removeWallet(i){
-  if(!confirm(`Remover "${wallets[i].name}"?`)) return;
+  const ok = await confirmModal(`Remover "${wallets[i].name}"?`);
+  if(!ok) return;
   const name=wallets[i].name;
   showLoading(`removendo "${name}"...`);
   await new Promise(r => setTimeout(r, 0));
@@ -771,6 +1329,16 @@ async function removeWallet(i){
     try {
       wallets.splice(i,1);
       await apiFetch('/api/wallets',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(wallets)});
+      // Atualiza lista e txHistory local imediatamente — não depende do polling
+      renderWallets();
+      // Remove entradas do txHistory local para que a tabela de transações
+      // não exiba txs da carteira removida até o próximo load() do servidor
+      if(txHistory[name]){
+        delete txHistory[name];
+        if(document.getElementById('page-transactions')?.classList.contains('active'))
+          renderTxHistory();
+        renderPortfolioChart();
+      }
     } catch(e){
       hideLoading();
       toast('erro ao remover: '+e.message,'err');
@@ -791,6 +1359,129 @@ function flatState(){
   return rows;
 }
 
+// ── Tabela de histórico de transações ────────────────────────────────────────
+const TX_PAGE_SIZE = 20;
+let _txPage = 0;
+
+function txPage(dir){
+  _txPage = Math.max(0, _txPage + dir);
+  renderTxHistory();
+}
+
+function renderTxHistory(){
+  const tbody = document.getElementById('tx-tbody');
+  if(!tbody) return;
+
+  // Monta lista flat de todas as txs
+  const allTxs = [];
+  for(const [wName, wData] of Object.entries(txHistory)){
+    if(!wData?.txids) continue;
+    for(const [txid, tx] of Object.entries(wData.txids)){
+      allTxs.push({...tx, txid, wallet: wName});
+    }
+  }
+
+  if(!allTxs.length){
+    tbody.innerHTML='<tr><td colspan="5" style="text-align:center;color:var(--text3);padding:24px">nenhuma transação registrada</td></tr>';
+    return;
+  }
+
+  // Atualiza o select de filtro por carteira
+  const sel = document.getElementById('tx-filter-wallet');
+  if(sel){
+    const cur = sel.value;
+    sel.innerHTML='<option value="">todas as carteiras</option>';
+    [...new Set(allTxs.map(t=>t.wallet))].forEach(n=>{
+      const o=document.createElement('option');
+      o.value=n; o.textContent=n;
+      if(n===cur) o.selected=true;
+      sel.appendChild(o);
+    });
+  }
+
+  // Filtra por carteira selecionada
+  const filterWallet = sel?.value||'';
+  let rows = filterWallet ? allTxs.filter(t=>t.wallet===filterWallet) : allTxs;
+
+  // Ordena: mais recente no topo
+  // Confirmadas: por height desc; mempool: por ts desc, aparecem antes das confirmadas
+  rows.sort((a,b)=>{
+    if(a.mempool && !b.mempool) return -1;
+    if(!a.mempool && b.mempool) return 1;
+    if(!a.mempool && !b.mempool){
+      if((b.height||0) !== (a.height||0)) return (b.height||0)-(a.height||0);
+    }
+    return (b.ts||0)-(a.ts||0);
+  });
+
+  // Paginação
+  const total = rows.length;
+  const pages = Math.ceil(total/TX_PAGE_SIZE);
+  _txPage = Math.min(_txPage, Math.max(0, pages-1));
+  const slice = rows.slice(_txPage*TX_PAGE_SIZE, (_txPage+1)*TX_PAGE_SIZE);
+
+  document.getElementById('tx-pginfo').textContent =
+    total ? `${_txPage+1} / ${pages} (${total} txs)` : '';
+  document.getElementById('tx-prev').disabled = _txPage===0;
+  document.getElementById('tx-next').disabled = _txPage>=pages-1;
+
+  const explorerBase=(cfg.general?.mempoolExplorer||'').replace(/\/$/,'');
+
+  const typeLabel = t => {
+    if(t.type==='received')         return '<span class="tx-type-recv">📥 recebimento</span>';
+    if(t.type==='sent')             return '<span class="tx-type-sent">📤 envio</span>';
+    if(t.type==='sent_with_change') return '<span class="tx-type-sent">📤 envio+troco</span>';
+    if(t.type==='consolidation')    return '<span class="tx-type-cons">🔀 consolidação</span>';
+    return t.type||'—';
+  };
+
+  const fmtVal = tx => {
+    const sat = tx.valueSat||0;
+    const btc = (Math.abs(sat)/1e8).toFixed(8);
+    const cls = sat>0?'tx-type-recv':sat<0?'tx-type-sent':'';
+    const sign = sat>0?'+':sat<0?'-':'';
+    return `<span class="${cls}">${sign}${btc}</span>`;
+  };
+
+  const walletBadge = wName => {
+    const w = wallets.find(x=>x.name===wName);
+    if(w && w.labelColor){
+      const col=LABEL_COLORS.find(c=>c.id===w.labelColor)||LABEL_COLORS[0];
+      return `<span class="w-label-badge" style="background:${col.bg};color:${col.fg};font-size:12px;padding:2px 7px">${wName}</span>`;
+    }
+    return `<span style="color:var(--text)">${wName}</span>`;
+  };
+
+  const fmtStatus = tx => {
+    if(tx.dropped)  return `<span style="color:var(--red);font-style:italic">⚠️ dropped/RBF</span>`;
+    if(tx.mempool)  return '<span class="tx-mempool">⏳ mempool</span>';
+    if(tx.height)   return `<span style="color:var(--text3)">🧱 ${tx.height}</span>`;
+    return '<span style="color:var(--text3)">confirmado</span>';
+  };
+
+  const fmtTxid = tx => {
+    const short = tx.txid.slice(0,14)+'…';
+    if(explorerBase)
+      return `<a href="${explorerBase}/tx/${tx.txid}" target="_blank" rel="noopener"
+        style="color:var(--text2);text-decoration:none;border-bottom:1px dotted var(--border2)"
+        title="${tx.txid}">${short}</a>`;
+    return `<span title="${tx.txid}" style="cursor:default">${short}</span>`;
+  };
+
+  if(!slice.length){
+    tbody.innerHTML='<tr><td colspan="5" style="text-align:center;color:var(--text3);padding:24px">nenhuma transação registrada</td></tr>';
+    return;
+  }
+
+  tbody.innerHTML = slice.map(tx=>`<tr>
+    <td>${typeLabel(tx)}</td>
+    <td>${walletBadge(tx.wallet)}</td>
+    <td style="text-align:right">${fmtVal(tx)}</td>
+    <td>${fmtTxid(tx)}</td>
+    <td>${fmtStatus(tx)}</td>
+  </tr>`).join('');
+}
+
 function renderAddresses(){
   const fWallet=document.getElementById('f-wallet')?.value||'';
   const fChain=document.getElementById('f-chain')?.value;
@@ -809,11 +1500,63 @@ function renderAddresses(){
   const tbody=document.getElementById('addr-tbody');
   if(!rows.length){ tbody.innerHTML='<tr><td colspan="6" style="text-align:center;color:var(--text3);padding:24px">nenhum endereço</td></tr>'; return; }
   const explorerBase=(cfg.general?.mempoolExplorer||'').replace(/\/$/,'');
+
+  // Pré-computa o endereço "eleito" para cada tx de envio na mempool.
+  // Para não poluir todos os inputs com badge negativo, escolhe apenas
+  // o endereço da carteira com maior balanceSat dentre os que têm aquele txid.
+  // Chave: "walletName|txid" → address eleito
+  const _sentElected = new Map();
+  for(const [wName, wData] of Object.entries(txHistory)){
+    if(!wData?.txids) continue;
+    for(const [txid, tx] of Object.entries(wData.txids)){
+      if(!tx.mempool || tx.dropped) continue;
+      if(tx.type !== 'sent' && tx.type !== 'sent_with_change' && tx.type !== 'consolidation') continue;
+      // Encontra todos os endereços desta carteira que têm este txid em mempoolTxids
+      const candidates = flatState().filter(r =>
+        r.wallet === wName && r.mempoolTxids?.includes(txid)
+      );
+      if(!candidates.length) continue;
+      // Elege o de maior balanceSat
+      const elected = candidates.reduce((best, r) =>
+        (r.balanceSat||0) > (best.balanceSat||0) ? r : best
+      );
+      _sentElected.set(`${wName}|${txid}`, elected.address);
+    }
+  }
+
   tbody.innerHTML=rows.map((r,i)=>{
     const bal=(r.balanceSat||0)/1e8;
     const txCount=(r.txids?.length||0)+(r.mempoolTxids?.length||0);
     const addrCell=explorerBase?`<a href="${explorerBase}/address/${r.address}" target="_blank" rel="noopener" style="color:inherit;text-decoration:none;border-bottom:1px dotted var(--border2)" title="Ver no explorador">${r.address}</a>`:r.address;
-    return `<tr><td style="color:var(--text3)">${i+1}</td><td><span class="chip ${r.chain===0?'chip-ext':'chip-chg'}">${r.chain===0?'ext':'chg'}</span></td><td style="color:var(--text2)">${r.wallet}</td><td class="${bal>0?'has-balance':''}">${addrCell}</td><td style="text-align:right;${bal>0?'color:var(--green)':''}">${bal.toFixed(8)}</td><td style="text-align:right;color:var(--text3)">${txCount}</td></tr>`;
+    const w=wallets.find(x=>x.name===r.wallet);
+    const wCell = w?.labelColor
+      ? (()=>{ const col=LABEL_COLORS.find(c=>c.id===w.labelColor)||LABEL_COLORS[0]; return `<span class="w-label-badge" style="background:${col.bg};color:${col.fg};font-size:11px;padding:2px 6px">${r.wallet}</span>`; })()
+      : `<span style="color:var(--text2)">${r.wallet}</span>`;
+
+    // Calcula valor pendente na mempool para este endereço.
+    // Recebimentos: mostra em todo endereço que aparece em addresses da tx.
+    // Envios: mostra apenas no endereço eleito (maior balanceSat da carteira).
+    let mempoolSat = 0;
+    if(r.mempoolTxids?.length){
+      const wTxHistory = txHistory[r.wallet]?.txids || {};
+      for(const txid of r.mempoolTxids){
+        const tx = wTxHistory[txid];
+        if(!tx || !tx.mempool || tx.dropped) continue;
+        if(tx.type === 'received' && tx.addresses?.includes(r.address)){
+          mempoolSat += (tx.valueSat || 0);
+        } else if(tx.type === 'sent' || tx.type === 'sent_with_change' || tx.type === 'consolidation'){
+          if(_sentElected.get(`${r.wallet}|${txid}`) === r.address)
+            mempoolSat += (tx.valueSat || 0);
+        }
+      }
+    }
+    const mempoolColor = mempoolSat >= 0 ? 'var(--green)' : 'var(--red)';
+    const mempoolBg    = mempoolSat >= 0 ? 'rgba(74,222,128,0.10)' : 'rgba(248,113,113,0.10)';
+    const mempoolBadge = mempoolSat !== 0
+      ? `<span style="margin-left:6px;font-size:10px;font-family:var(--mono);padding:1px 6px;border-radius:3px;background:${mempoolBg};color:${mempoolColor}" title="pendente na mempool">⏳ ${mempoolSat>0?'+':''}${(mempoolSat/1e8).toFixed(8)}</span>`
+      : '';
+
+    return `<tr><td style="color:var(--text3)">${i+1}</td><td><span class="chip ${r.chain===0?'chip-ext':'chip-chg'}">${r.chain===0?'ext':'chg'}</span></td><td>${wCell}</td><td class="${bal>0?'has-balance':''}">${addrCell}${mempoolBadge}</td><td style="text-align:right;${bal>0?'color:var(--green)':''}">${bal.toFixed(8)}</td><td style="text-align:right;color:var(--text3)">${txCount}</td></tr>`;
   }).join('');
 }
 

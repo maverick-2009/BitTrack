@@ -159,7 +159,9 @@ function getCFG() { return loadConfig(); }
 let _activeElectrumKey = '';
 function electrumKey(e) { return `${e.host}:${e.port}:${e.tls}`; }
 const CFG = getCFG(); // usado apenas para inicialização
-const RUNTIME_FILE = path.join(dataDir, 'runtime.json');
+const RUNTIME_FILE       = path.join(dataDir, 'runtime.json');
+const PRICE_HISTORY_FILE = path.join(dataDir, 'historicalprice.json');
+const TX_HISTORY_FILE    = path.join(dataDir, 'txhistory.json');
 
 // runtime.json — dados voláteis gravados pelo monitor em tempo real.
 // Nunca monitorado pelo fs.watchFile, portanto não causa restart.
@@ -167,6 +169,119 @@ const RUNTIME_FILE = path.join(dataDir, 'runtime.json');
 function readRuntime() {
   try { return JSON.parse(fs.readFileSync(RUNTIME_FILE, 'utf8')); }
   catch { return {}; }
+}
+
+// ─── HISTÓRICO DE PREÇO ──────────────────────────────────────────────────────
+// Grava cada ponto de preço em data/historicalprice.json
+// Formato: array de { t: timestamp_ms, p: price }
+// Limita a 8640 pontos (30 dias × 288 pontos/dia a cada 5 min)
+const PRICE_HISTORY_MAX = 8640;
+
+function appendPriceHistory(price) {
+  try {
+    let history = [];
+    try { history = JSON.parse(fs.readFileSync(PRICE_HISTORY_FILE, 'utf8')); }
+    catch { history = []; }
+    if (!Array.isArray(history)) history = [];
+    history.push({ t: Date.now(), p: price });
+    if (history.length > PRICE_HISTORY_MAX) history = history.slice(-PRICE_HISTORY_MAX);
+    fs.writeFileSync(PRICE_HISTORY_FILE, JSON.stringify(history));
+  } catch(e) { log.warn(`appendPriceHistory: ${e.message}`); }
+}
+
+// ─── HISTÓRICO DE TRANSAÇÕES ──────────────────────────────────────────────────
+// Grava cada transação classificada em data/txhistory.json
+// Estrutura: { [walletName]: { txids: { [txid]: { type, valueSat, feeSat, height, ts, mempool, addresses } } } }
+// Anti-duplicata via lookup O(1) no objeto txids — nunca reprocessa o que já existe.
+// Máximo de 500 txids por carteira (mais antigas removidas).
+
+const TX_HISTORY_MAX = 500;
+
+function readTxHistory() {
+  try { return JSON.parse(fs.readFileSync(TX_HISTORY_FILE, 'utf8')); }
+  catch { return {}; }
+}
+
+function writeTxHistory(data) {
+  try { fs.writeFileSync(TX_HISTORY_FILE, JSON.stringify(data, null, 2)); }
+  catch(e) { log.warn(`writeTxHistory: ${e.message}`); }
+}
+
+// Retorna true se o txid já está registrado para aquela carteira
+function txHistoryHas(walletName, txid) {
+  try {
+    const h = readTxHistory();
+    return !!(h[walletName]?.txids?.[txid]);
+  } catch { return false; }
+}
+
+// Grava uma transação classificada no histórico.
+// classification, txid: obrigatórios
+// height: número do bloco (null = mempool)
+// isPending: bool
+// histEntry: entrada do getHistory (pode ter .time para timestamp real)
+function appendTxHistory(classification, txid, height, isPending, histEntry) {
+  try {
+    const { type, walletName } = classification;
+    const h = readTxHistory();
+    if (!h[walletName]) h[walletName] = { txids: {} };
+    if (!h[walletName].txids) h[walletName].txids = {};
+
+    // Anti-duplicata — nunca reprocessa
+    if (h[walletName].txids[txid]) {
+      // Atualiza apenas se estava como mempool e agora confirmou
+      if (h[walletName].txids[txid].mempool && !isPending && height) {
+        h[walletName].txids[txid].mempool = false;
+        h[walletName].txids[txid].height  = height;
+        writeTxHistory(h);
+      }
+      return;
+    }
+
+    let valueSat = 0, feeSat = 0, addresses = [];
+    if (type === 'received') {
+      valueSat  =  classification.valueSat  || 0;
+      addresses =  (classification.destinations || []).map(d => d.address);
+    } else if (type === 'sent') {
+      feeSat    =   classification.feeSats  || 0;
+      valueSat  = -(classification.sentSats || 0) - feeSat;
+      addresses =  (classification.destinations || []).map(d => d.address);
+    } else if (type === 'sent_with_change') {
+      feeSat    =   classification.feeSats  || 0;
+      valueSat  = -(classification.sentSats || 0) - feeSat;
+      addresses =  (classification.destinations || []).map(d => d.address);
+    } else if (type === 'consolidation') {
+      valueSat  =  classification.outputSats || 0;
+      addresses =  (classification.destinations || []).map(d => d.address);
+    }
+
+    // Timestamp: prefere .time do Electrum (unix seconds), senão Date.now()
+    const ts = histEntry?.time ? histEntry.time * 1000 : (isPending ? Date.now() : null);
+
+    h[walletName].txids[txid] = {
+      type,
+      valueSat,
+      feeSat,
+      height:  height || null,
+      ts,
+      mempool: !!isPending,
+      addresses,
+    };
+
+    // Limita a TX_HISTORY_MAX por carteira (remove os mais antigos por height/ts)
+    const entries = Object.entries(h[walletName].txids);
+    if (entries.length > TX_HISTORY_MAX) {
+      entries.sort(([, a], [, b]) => {
+        const ha = a.height || 9999999, hb = b.height || 9999999;
+        if (ha !== hb) return ha - hb;
+        return (a.ts || 0) - (b.ts || 0);
+      });
+      const toRemove = entries.slice(0, entries.length - TX_HISTORY_MAX);
+      for (const [id] of toRemove) delete h[walletName].txids[id];
+    }
+
+    writeTxHistory(h);
+  } catch(e) { log.warn(`appendTxHistory: ${e.message}`); }
 }
 
 // Salva o preço de referência em notifications.priceReference no config.json
@@ -207,6 +322,68 @@ function updateLockMsg(msg) {
   data.lock.msg = msg;
   try { fs.writeFileSync(RUNTIME_FILE, JSON.stringify(data, null, 2)); }
   catch(e) { log.warn(`updateLockMsg: ${e.message}`); }
+}
+
+// ─── FEES VIA ELECTRUM ───────────────────────────────────────────────────────
+// Busca o fee histogram do Electrum e calcula estimativas rápido/médio/lento.
+// O histogram é um array de [feeRate, vsize] ordenado por feeRate decrescente.
+// Estratégia: acumula vsize até atingir 25% (rápido), 50% (médio), 75% (lento)
+// do total. feeRate em sat/vB (já no formato correto do Electrum).
+async function fetchAndSaveFees(electrum) {
+  try {
+    // 1. Buscamos as estimativas oficiais do Bitcoin Core (via Electrum)
+    // n=2 (~20 min), n=5 (~50 min), n=10 (~1h 40min)
+    const [f2, f5, f10] = await Promise.all([
+      electrum.call('blockchain.estimatefee', [2]),
+      electrum.call('blockchain.estimatefee', [5]),
+      electrum.call('blockchain.estimatefee', [10])
+    ]);
+
+    const toSatVb = (btcKb) => (btcKb && btcKb > 0) ? Math.ceil(btcKb * 100000) : null;
+
+    let fast = toSatVb(f2);
+    let med  = toSatVb(f5);
+    let slow = toSatVb(f10);
+
+    // 2. Fallback: Se o estimatefee falhar (-1), usamos o Histograma como plano B
+    if (!fast || !med || !slow) {
+      const histogram = await electrum.getFeeHistogram();
+      if (Array.isArray(histogram) && histogram.length > 0) {
+        const total = histogram.reduce((s, [, v]) => s + v, 0);
+        let acc = 0;
+        for (const [fee, vsize] of histogram) {
+          acc += vsize;
+          if (fast === null && acc >= total * 0.25) fast = Math.round(fee);
+          if (med  === null && acc >= total * 0.50) med  = Math.round(fee);
+          if (slow === null && acc >= total * 0.75) slow = Math.round(fee);
+        }
+      }
+    }
+
+    // 3. Garantia final de sanidade (Sanity Check)
+    // Se tudo falhar, assume 1 sat/vB. Se houver valores, garante a hierarquia.
+    fast = Math.max(1, fast ?? 1);
+    med  = Math.max(1, med  ?? fast);
+    slow = Math.max(1, slow ?? med);
+
+    // Ordenação lógica: fast >= med >= slow
+    const fastestFee  = Math.max(fast, med, slow);
+    const halfHourFee = Math.max(med, slow);
+    const hourFee     = slow;
+
+    writeRuntime({
+      fees: {
+        fastestFee,
+        halfHourFee,
+        hourFee,
+        updatedAt: Date.now(),
+      }
+    });
+
+    log.info(`  [fees] rápido=${fastestFee} médio=${halfHourFee} lento=${hourFee} sat/vB`);
+  } catch(e) {
+    log.warn(`  [fees] erro ao atualizar: ${e.message}`);
+  }
 }
 
 // ─── PREFERÊNCIAS DE NOTIFICAÇÃO ─────────────────────────────────────────────
@@ -491,7 +668,7 @@ function setAddrState(addr, data, walletName) {
   if (!state[walletName])        state[walletName] = {};
   if (!state[walletName][label]) state[walletName][label] = {};
   const prev = getAddrState(addr, walletName);
-  state[walletName][label][addr] = { ...prev, ...data, lastUpdate: Date.now() };
+  state[walletName][label][addr] = { addressIndex: info.index, ...prev, ...data, lastUpdate: Date.now() };
   saveState();
 }
 
@@ -679,13 +856,16 @@ async function classifyTx(txData, walletName, network, electrum) {
     if (vin.coinbase) continue; // tx coinbase não tem prevout real
 
     let prevScript = vin.prevout?.scriptPubKey?.hex || '';
+    let prevValue  = vin.prevout?.value ?? null;
 
-    // Fallback: busca a tx do input para obter o scriptPubKey gasto
-    if (!prevScript && electrum && vin.txid) {
+    // Fallback: busca a tx do input para obter scriptPubKey e/ou value quando
+    // o Electrum Server não inclui prevout completo (comum em Signet/Testnet mempool)
+    if ((!prevScript || prevValue === null) && electrum && vin.txid) {
       try {
         const prevTx  = await electrum.getTransaction(vin.txid);
         const prevOut = (prevTx.vout || [])[vin.vout];
-        prevScript = prevOut?.scriptPubKey?.hex || '';
+        if (!prevScript)       prevScript = prevOut?.scriptPubKey?.hex || '';
+        if (prevValue === null) prevValue  = prevOut?.value ?? null;
       } catch { /* ignora falha de lookup — assume externo */ }
     }
 
@@ -696,7 +876,7 @@ async function classifyTx(txData, walletName, network, electrum) {
     const prevEntry = (shMap.get(prevSh) || []).find(e => e.wallet.name === walletName);
     const addr      = prevEntry?.address;
     if (addr && addrMap.has(addr + '|' + walletName)) {
-      const val = vin.prevout?.value ?? 0;
+      const val = prevValue ?? 0;
       myInputSats += Math.round(val * 1e8);
       inputAddrs.add(addr);
     }
@@ -985,6 +1165,7 @@ class ElectrumClient {
   getBalance(scriptHash) { return this.call('blockchain.scripthash.get_balance', [scriptHash]); }
   getTransaction(txid)   { return this.call('blockchain.transaction.get', [txid, true]); }
   ping()                 { return this.call('server.ping', [], 10000); }
+  getFeeHistogram()      { return this.call('mempool.get_fee_histogram', [], 10000); }
   disconnect()           { this.connected = false; clearTimeout(this._inactivityTimer); this.socket?.destroy(); }
 }
 
@@ -1023,7 +1204,9 @@ async function processChange(electrum, scriptHash, newStatusHash) {
   const balance  = history.length
     ? await electrum.getBalance(scriptHash).catch(() => ({ confirmed: 0, unconfirmed: 0 }))
     : { confirmed: 0, unconfirmed: 0 };
-  const totalSat = (balance.confirmed || 0) + (balance.unconfirmed || 0);
+  const confirmedSat  = balance.confirmed  || 0;
+  const unconfirmedSat= balance.unconfirmed|| 0;
+  const totalSat = confirmedSat + unconfirmedSat;
 
   // Processa cada wallet que monitora este scriptHash independentemente
   for (const { address, wallet, chain, index } of entries) {
@@ -1046,15 +1229,48 @@ async function processChange(electrum, scriptHash, newStatusHash) {
     const isCatchingUp = !initialScanDone;
     if (isFirstSync || isCatchingUp) {
       setAddrState(address, {
-        balanceSat:   totalSat,
-        txids:        confirmedTxids,
-        mempoolTxids: mempoolTxids,
-        statusHash:   newStatusHash,
+        balanceSat:     confirmedSat,
+        unconfirmedSat: unconfirmedSat,
+        txids:          confirmedTxids,
+        mempoolTxids:   mempoolTxids,
+        statusHash:     newStatusHash,
       }, wallet.name);
       if (isFirstSync)
-        log.info(`  Sync inicial: ${address.slice(0,20)}… ${confirmedTxids.length} txs, saldo ${sats(totalSat)} BTC`);
+        log.info(`  Sync inicial: ${address.slice(0,20)}… ${confirmedTxids.length} txs, saldo ${sats(confirmedSat)} BTC (+${sats(unconfirmedSat)} mempool)`);
       else
         log.info(`  Catch-up: ${address.slice(0,20)}… ${confirmedTxids.length} txs (offline gap, sem notificação)`);
+
+      // ── Catch-up do txhistory ─────────────────────────────────────────────
+      const allTxids = [...confirmedTxids, ...mempoolTxids];
+      for (const txid of allTxids) {
+        const he = history.find(h => h.tx_hash === txid);
+        const isNowConfirmed = he?.height > 0;
+
+        if (txHistoryHas(wallet.name, txid)) {
+          if (isNowConfirmed) {
+            const cur = readTxHistory();
+            const rec = cur[wallet.name]?.txids?.[txid];
+            if (rec && rec.mempool) {
+              rec.mempool = false;
+              rec.height  = he.height;
+              if (he.time) rec.ts = he.time * 1000;
+              writeTxHistory(cur);
+              log.info(`  [txhistory] ${txid.slice(0,16)}… promovido mempool→bloco #${he.height}`);
+            }
+          }
+          continue;
+        }
+
+        try {
+          const txData = await electrum.getTransaction(txid).catch(() => null);
+          if (!txData) continue;
+          const cl = await classifyTx(txData, wallet.name, network, electrum);
+          if (!cl) continue;
+          const ht = isNowConfirmed ? he.height : null;
+          appendTxHistory(cl, txid, ht, !isNowConfirmed, he);
+        } catch(e) { log.warn(`  [txhistory catch-up] ${txid.slice(0,16)}…: ${e.message}`); }
+      }
+
       if (initialScanDone) ensureGap(wallet, chain, index, electrum);
       continue;
     }
@@ -1067,15 +1283,20 @@ async function processChange(electrum, scriptHash, newStatusHash) {
       const notifKey = `${txid}|${wallet.name}`;
       if (notifiedTxids.has(notifKey)) return;
       notifiedTxids.add(notifKey);
-      if (!notifEnabled('mempoolPending')) {
-        log.info(`  [filtro] mempool tx ignorada (notif desligada): ${txid.slice(0,16)}…`);
-        return;
-      }
       let txData;
       try { txData = await electrum.getTransaction(txid); }
       catch(e) { log.warn(`  transaction.get ${txid.slice(0,16)}…: ${e.message}`); return; }
       const classification = await classifyTx(txData, wallet.name, network, electrum);
       if (!classification) { log.warn(`  classifyTx: nenhum vout nosso em ${txid.slice(0,16)}…`); return; }
+
+      // Registra no histórico (mempool=true)
+      const he = history.find(h => h.tx_hash === txid);
+      appendTxHistory(classification, txid, null, true, he);
+
+      if (!notifEnabled('mempoolPending')) {
+        log.info(`  [filtro] mempool tx ignorada (notif desligada): ${txid.slice(0,16)}…`);
+        return;
+      }
       const msg = buildTelegramMsg(classification, txid, null, true);
       if (!msg) return;
       log.info(`📥 [${classification.type}] ${address.slice(0,20)}… ${txid.slice(0,16)}…`);
@@ -1084,19 +1305,25 @@ async function processChange(electrum, scriptHash, newStatusHash) {
 
     // ── Confirmadas: acumula no buffer por (bloco, carteira) ─────────────────
     async function bufferConfirmed(txid, height) {
-      const notifKey = `${txid}|${wallet.name}`;
-      if (notifiedTxids.has(notifKey)) return;
-      notifiedTxids.add(notifKey);
-      if (!notifEnabled('txConfirmed')) {
-        log.info(`  [filtro] tx confirmada ignorada (notif desligada): ${txid.slice(0,16)}…`);
-        return;
-      }
+      // Chave específica para confirmação — evita que dois endereços da mesma
+      // carteira (ex: saída + troco) processem o mesmo txid duas vezes
+      const confirmedKey = `confirmed:${txid}|${wallet.name}`;
+      if (notifiedTxids.has(confirmedKey)) return;
+      notifiedTxids.add(confirmedKey);
       let txData;
       try { txData = await electrum.getTransaction(txid); }
       catch(e) { log.warn(`  transaction.get ${txid.slice(0,16)}…: ${e.message}`); return; }
       const classification = await classifyTx(txData, wallet.name, network, electrum);
       if (!classification) { log.warn(`  classifyTx: nenhum vout nosso em ${txid.slice(0,16)}…`); return; }
 
+      // Registra/atualiza no histórico (confirmada)
+      const he = history.find(h => h.tx_hash === txid);
+      appendTxHistory(classification, txid, height, false, he);
+
+      if (!notifEnabled('txConfirmed')) {
+        log.info(`  [filtro] tx confirmada ignorada (notif desligada): ${txid.slice(0,16)}…`);
+        return;
+      }
       log.info(`✅ [${classification.type}] ${address.slice(0,20)}… ${txid.slice(0,16)}… → buffer bloco #${height}`);
 
       const key = `${wallet.name}:${height}`;
@@ -1115,20 +1342,45 @@ async function processChange(electrum, scriptHash, newStatusHash) {
       await notifyMempool(txid);
     }
 
+    // ── Detecta dropped/RBF ao vivo ──────────────────────────────────────────
+    // Txids que estavam no mempool anterior mas desapareceram sem confirmar
+    for (const txid of prevMempool) {
+      if (mempoolTxids.includes(txid) || confirmedTxids.includes(txid)) continue;
+      // Sumiu da mempool sem confirmar → dropped ou substituído por RBF
+      const cur = readTxHistory();
+      const rec = cur[wallet.name]?.txids?.[txid];
+      if (rec && rec.mempool) {
+        rec.mempool   = false;
+        rec.dropped   = true;
+        rec.droppedAt = Date.now();
+        writeTxHistory(cur);
+        log.warn(`  [RBF/drop] ${txid.slice(0,16)}… removido do mempool sem confirmar (${wallet.name})`);
+        if (notifEnabled('mempoolPending')) {
+          await sendTelegram(
+            `⚠️ <b>Transação removida do mempool</b>\n` +
+            `💼 <b>${wallet.name}</b>\n` +
+            `🔗 <code>${txid}</code>\n` +
+            `ℹ️ Pode ter sido substituída por taxa maior (RBF) ou expirado\n` +
+            `🕐 ${now()}`
+          ).catch(() => {});
+        }
+      }
+    }
+
     for (const txid of confirmedTxids) {
       if (prevConfirmed.includes(txid)) continue;
       hasActivity = true;
       const histEntry = history.find(h => h.tx_hash === txid);
       const height    = histEntry ? histEntry.height : '?';
-      notifiedTxids.delete(`${txid}|${wallet.name}`);
       await bufferConfirmed(txid, height);
     }
 
     setAddrState(address, {
-      balanceSat:   totalSat,
-      txids:        confirmedTxids,
-      mempoolTxids: mempoolTxids,
-      statusHash:   newStatusHash,
+      balanceSat:     confirmedSat,
+      unconfirmedSat: unconfirmedSat,
+      txids:          confirmedTxids,
+      mempoolTxids:   mempoolTxids,
+      statusHash:     newStatusHash,
     }, wallet.name);
 
     if (hasActivity || history.length > 0) {
@@ -1418,6 +1670,7 @@ async function fetchPrice() {
         log.info(`  [preço] ${api.name} → ${fmtPrice(price)}`);
         _priceCache = { usd: price, updatedAt: Date.now() };
         writeRuntime({ price: _priceCache });
+        appendPriceHistory(price);
         return price;
       }
     } catch(e) {
@@ -1429,7 +1682,112 @@ async function fetchPrice() {
 }
 
 
-// ─── MAIN ─────────────────────────────────────────────────────────────────────
+// ─── RECONCILIA MEMPOOL→CONFIRMADO/DROPPED NO TXHISTORY ──────────────────────
+// Varre o txhistory.json procurando entradas com mempool:true e:
+//   1. Se a tx foi confirmada → promove (mempool=false, preenche height/ts)
+//   2. Se a tx foi dropada ou substituída por RBF → marca dropped=true
+//      (não remove, pois é informação histórica útil)
+// Detecção de dropped: a tx não aparece mais no histórico do Electrum de nenhum
+// endereço da carteira — nem como confirmada nem como mempool.
+// Roda uma vez após o subscribeAll terminar.
+async function reconcileMempoolTxHistory(electrum) {
+  const h = readTxHistory();
+  let promoted = 0, dropped = 0;
+
+  for (const [walletName, wData] of Object.entries(h)) {
+    if (!wData?.txids) continue;
+
+    // Pré-carrega o histórico completo de todos os endereços desta carteira
+    // para poder verificar rapidamente se um txid ainda existe no Electrum.
+    // Cache: scriptHash → Set de txids presentes no Electrum
+    const electrumTxids = new Map(); // scriptHash → Set<txid>
+
+    for (const [txid, tx] of Object.entries(wData.txids)) {
+      if (!tx.mempool) continue; // só processa os ainda como mempool
+
+      try {
+        // ── Passo 1: a tx ainda existe no Electrum? ─────────────────────────
+        const txData = await electrum.getTransaction(txid).catch(() => null);
+
+        if (!txData) {
+          // getTransaction falhou — tx pode ter sido dropada do mempool
+          // Verifica se aparece no histórico de algum endereço da carteira
+          let foundInHistory = false;
+          for (const [key, info] of addrMap.entries()) {
+            if (info.wallet.name !== walletName) continue;
+            let shTxids = electrumTxids.get(info.scriptHash);
+            if (!shTxids) {
+              const hist = await electrum.getHistory(info.scriptHash).catch(() => []);
+              shTxids = new Set(hist.map(e => e.tx_hash));
+              electrumTxids.set(info.scriptHash, shTxids);
+            }
+            if (shTxids.has(txid)) { foundInHistory = true; break; }
+          }
+
+          if (!foundInHistory) {
+            // Tx sumiu completamente — dropped ou RBF
+            tx.mempool  = false;
+            tx.dropped  = true;
+            tx.droppedAt = Date.now();
+            dropped++;
+            log.warn(`  [reconcile] ${txid.slice(0,16)}… DROPPED/RBF — removida do mempool sem confirmar (${walletName})`);
+          }
+          continue;
+        }
+
+        // ── Passo 2: tx existe — confirmada? ────────────────────────────────
+        const isConfirmed = (txData.confirmations > 0) || !!txData.blockhash || !!txData.blocktime;
+
+        if (!isConfirmed) {
+          // Ainda na mempool — sem ação
+          continue;
+        }
+
+        // ── Passo 3: promove mempool→confirmado, busca height ────────────────
+        let height = null;
+        for (const [key, info] of addrMap.entries()) {
+          if (info.wallet.name !== walletName) continue;
+          let shTxids = electrumTxids.get(info.scriptHash);
+          if (!shTxids) {
+            const hist = await electrum.getHistory(info.scriptHash).catch(() => []);
+            shTxids = new Set(hist.map(e => e.tx_hash));
+            electrumTxids.set(info.scriptHash, shTxids);
+            // Aproveita para pegar o height desta entrada
+            const entry = hist.find(e => e.tx_hash === txid);
+            if (entry?.height > 0 && !height) height = entry.height;
+          } else if (shTxids.has(txid)) {
+            // Já temos o set mas precisamos do height — refaz getHistory só se necessário
+            if (!height) {
+              const hist = await electrum.getHistory(info.scriptHash).catch(() => []);
+              const entry = hist.find(e => e.tx_hash === txid);
+              if (entry?.height > 0) height = entry.height;
+            }
+          }
+          if (height) break;
+        }
+
+        tx.mempool = false;
+        if (height)              tx.height = height;
+        if (txData.blocktime)    tx.ts     = txData.blocktime * 1000;
+        promoted++;
+        log.info(`  [reconcile] ${txid.slice(0,16)}… promovido mempool→${height ? 'bloco #'+height : 'confirmado'} (${walletName})`);
+
+      } catch(e) {
+        log.warn(`  [reconcile] ${txid.slice(0,16)}…: ${e.message}`);
+      }
+    }
+  }
+
+  const changed = promoted + dropped;
+  if (changed > 0) {
+    writeTxHistory(h);
+    if (promoted) log.ok(`[reconcile] ${promoted} tx(s) promovidas mempool→confirmado`);
+    if (dropped)  log.warn(`[reconcile] ${dropped} tx(s) marcadas como DROPPED/RBF`);
+  } else {
+    log.info('[reconcile] nenhuma tx pendente na mempool para reconciliar');
+  }
+}
+
 async function run() {
   log.info('╔═════════════════════════════════════════╗');
   log.info('║  BitTrack Monitor v5 — Electrum Server  ║');
@@ -1439,6 +1797,38 @@ async function run() {
   loadState();
   loadWallets();
   reconcileGapOnBoot(); // reconcilia redução de gapLimit que ocorreu offline
+
+  // Ativa o lock imediatamente — painel fica bloqueado até o boot estar completo
+  writeRuntime({ lock: { active: true, msg: 'iniciando...', since: Date.now(), timeoutAt: null } });
+  log.info('boot iniciado — runtime lock ativado');
+
+  // ── Detecta txhistory ausente/vazio e força ressincronização completa ─────
+  // Se o txhistory.json não existe ou está vazio, invalida o statusHash de
+  // todos os endereços com histórico no state — isso força o processChange
+  // a rodar o catch-up completo em cada um, reconstruindo o txhistory do zero.
+  // Endereços sem histórico (balanceSat=0, txids=[]) são preservados.
+  const _txHistoryRaw = (() => { try { return JSON.parse(fs.readFileSync(TX_HISTORY_FILE, 'utf8')); } catch { return null; } })();
+  const _txHistoryEmpty = !_txHistoryRaw || Object.keys(_txHistoryRaw).length === 0;
+  if (_txHistoryEmpty) {
+    let invalidated = 0;
+    for (const [walletName, wData] of Object.entries(state)) {
+      if (typeof wData !== 'object') continue;
+      for (const labelData of Object.values(wData)) {
+        if (typeof labelData !== 'object') continue;
+        for (const addrData of Object.values(labelData)) {
+          if (!addrData || typeof addrData !== 'object') continue;
+          // Só invalida endereços que têm histórico — não toca endereços vazios
+          if ((addrData.txids?.length || 0) > 0 || (addrData.mempoolTxids?.length || 0) > 0) {
+            addrData.statusHash = null; // força reprocessamento no subscribeAll
+            invalidated++;
+          }
+        }
+      }
+    }
+    if (invalidated > 0) {
+      log.info(`[boot] txhistory ausente — ${invalidated} endereço(s) com histórico marcados para ressincronização`);
+    }
+  }
 
   const _initCfg = getCFG();
   log.info(`Endereços: ${addrMap.size} | Gap limit: ${_initCfg.gapLimit}`);
@@ -1587,22 +1977,30 @@ async function run() {
       const ver = await electrum.call('server.version', ['BitTrack/5.0', '1.4']);
       log.info(`Servidor: ${Array.isArray(ver) ? ver.join(' / ') : ver}`);
 
-      // Conexão e handshake OK — libera o overlay do painel imediatamente.
-      // O subscribeAll continua rodando em background sem bloquear a UI.
-      if (!_reconnectRequested) {
-        writeRuntime({ lock: { active: false, msg: '', since: null, timeoutAt: null } });
-        log.info('handshake concluído — runtime lock liberado');
-      }
-
       await sendTelegram(msgStartup(addrMap.size, getCFG().gapLimit));
 
       await subscribeAll(electrum);
 
-      // Keepalive
+      // Reconcilia txs que estavam na mempool e foram confirmadas enquanto offline
+      await reconcileMempoolTxHistory(electrum).catch(e =>
+        log.warn(`[reconcile] erro: ${e.message}`)
+      );
+
+      // Busca fees inicial logo após conexão
+      await fetchAndSaveFees(electrum).catch(() => {});
+
+      // Boot completo — só agora libera o painel
+      if (!_reconnectRequested) {
+        writeRuntime({ lock: { active: false, msg: '', since: null, timeoutAt: null } });
+        log.info('boot concluído — runtime lock liberado');
+      }
+
+      // Keepalive + atualização de fees a cada ping
       const pingTimer = setInterval(async () => {
         if (!electrum.connected) { clearInterval(pingTimer); return; }
         try {
           await electrum.ping();
+          await fetchAndSaveFees(electrum).catch(() => {});
         } catch(e) {
           log.warn(`  [ping] falhou (${e.message}) — forçando reconexão`);
           electrum.disconnect();
@@ -1971,6 +2369,18 @@ async function hotReloadWallets(electrum) {
       // Remove do state
       delete state[wallet.name];
       saveState();
+
+      // Remove do txHistory — evita que transações da carteira removida
+      // apareçam no histórico após remoção ou contaminem re-adições futuras.
+      try {
+        const th = readTxHistory();
+        if (th[wallet.name]) {
+          delete th[wallet.name];
+          writeTxHistory(th);
+          log.info(`[hot-reload] "${wallet.name}" — txHistory limpo`);
+        }
+      } catch(e) { log.warn(`[hot-reload] limpeza txHistory "${wallet.name}": ${e.message}`); }
+
       log.info(`[hot-reload] "${wallet.name}" removido — ${count} endereços purgados da memória`);
     }
     // Atualiza lista em memória
@@ -1992,6 +2402,19 @@ async function hotReloadWallets(electrum) {
   }
 
   log.info(`[hot-reload] ${added.length} novo(s) descritor(es) detectado(s) — subscrevendo...`);
+
+  // Para carteiras recém-adicionadas, garante que não há txHistory residual
+  // de uma carteira com mesmo nome que foi removida anteriormente.
+  for (const wallet of added) {
+    try {
+      const th = readTxHistory();
+      if (th[wallet.name]) {
+        delete th[wallet.name];
+        writeTxHistory(th);
+        log.info(`[hot-reload] txHistory residual de "${wallet.name}" limpo antes de re-indexar`);
+      }
+    } catch(e) { log.warn(`[hot-reload] limpeza txHistory pré-add "${wallet.name}": ${e.message}`); }
+  }
 
   // Calcula total estimado de endereços a indexar (para progresso)
   const _cfg0 = getCFG();
