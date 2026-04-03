@@ -1,0 +1,15 @@
+version: "3.7"
+
+services:
+  bittrack:
+    image: maverick2009/bittrack:1.0.0
+    container_name: bittrack_bittrack_1
+    restart: on-failure
+    ports:
+      - "${APP_PORT}:8585"
+    volumes:
+      - "${APP_DATA_DIR}/data:/app/data"
+    environment:
+      DATA_DIR: "/app/data"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
