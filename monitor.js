@@ -29,13 +29,13 @@ fs.mkdirSync(dataDir, { recursive: true });
 // Usada tanto para criar o arquivo do zero quanto para completar campos faltantes.
 const CONFIG_DEFAULTS = {
   electrum: {
-    name: 'Local',
-    host: '',
-    port: 50002,
-    tls:  false,
+    name: 'Blockstream Server',
+    host: 'blockstream.info',
+    port: 700,
+    tls:  true,
   },
   telegram: {
-    enabled: true,
+    enabled: false,
     token:   '',
     chatId:  '',
   },
