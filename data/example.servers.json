@@ -14,13 +14,5 @@
     "tls": true,
     "network": "mainnet",
     "builtin": false
-  },  
-  {
-    "name": "Mempool.space",
-    "host": "mempool.space",
-    "port": 50002,
-    "tls": true,
-    "network": "mainnet",
-    "builtin": false
   }
 ]

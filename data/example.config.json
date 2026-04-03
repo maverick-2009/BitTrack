@@ -6,11 +6,17 @@
     "tls": false
   },
   "telegram": {
+    "enabled": false,
     "token": "00000000000000000000000000000000000000",
     "chatId": "000000000000"
   },
+    "ntfy": {
+    "enabled": false,
+    "url": "https://ntfy.sh/BitTracker",
+    "token": "tk_00000000000000000000000000000"
+  },
   "general": {
-    "mempoolExplorer": "http://192.168.0.10:3006/",
+    "mempoolExplorer": "https://mempool.space/",
     "currency": "USD",
     "timezone": "America/Sao_Paulo",
     "dateLocale": "pt-BR",

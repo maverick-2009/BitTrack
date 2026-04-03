@@ -1,0 +1,25 @@
+manifestVersion: 1
+id: bittrack
+name: BitTrack
+version: "1.0.0"
+tagline: Bitcoin wallet monitor
+category: bitcoin
+description: >-
+  Aplicação para monitorar carteiras de Bitcoin em tempo real,
+  com suporte a múltiplas carteiras, histórico de transações
+  e notificações via Telegram e/ou Ntfy.
+releaseNotes: >-
+  Versão inicial do BitTrack.
+developer: Eduardo
+website: https://github.com/maverick-2009/BitTrack
+support: https://github.com/maverick-2009/BitTrack/issues
+repo: https://github.com/maverick-2009/BitTrack
+icon: icon.png
+port: 8585
+gallery:
+  - screenshot1.png
+  - screenshot2.png
+dependencies: []
+path: ""
+defaultUsername: ""
+defaultPassword: "admin"
