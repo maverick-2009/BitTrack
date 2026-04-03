@@ -70,6 +70,15 @@ html, body { height: 100%; background: var(--bg); color: var(--text); font-famil
   transition: border-color 0.15s; outline: none;
 }
 .field input:focus, .field select:focus, .field textarea:focus { border-color: var(--border2); }
+.field input:-webkit-autofill,
+.field input:-webkit-autofill:hover,
+.field input:-webkit-autofill:focus {
+  -webkit-text-fill-color: #f0f0f0;
+  -webkit-box-shadow: 0 0 0px 1000px #1c1c1c inset;
+  transition: background-color 5000s ease-in-out 0s;
+  caret-color: #f0f0f0;
+}
+::placeholder { color: #555; opacity: 1; }
 .field textarea { resize: vertical; min-height: 72px; line-height: 1.6; }
 .field select option { background: var(--surface2); }
 .field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
@@ -476,10 +485,10 @@ html, body { height: 100%; background: var(--bg); color: var(--text); font-famil
         </div>
         <div id="add-server-form" class="add-form">
           <div style="height:14px"></div>
-          <div class="field"><label>nome</label><input id="s-name" placeholder="Electrum Server"/></div>
+          <div class="field"><label>nome</label><input id="s-name" placeholder="Electrum Server" autocomplete="off"/></div>
           <div class="field-row3">
-            <div class="field"><label>host</label><input id="s-host" placeholder="192.168.x.x"/></div>
-            <div class="field"><label>porta</label><input id="s-port" type="number" placeholder="50002"/></div>
+            <div class="field"><label>host</label><input id="s-host" placeholder="192.168.x.x" autocomplete="off"/></div>
+            <div class="field"><label>porta</label><input id="s-port" type="number" placeholder="50002" autocomplete="off"/></div>
             <div class="field"><label>TLS</label>
               <select id="s-tls"><option value="true">sim</option><option value="false">não</option></select>
             </div>
