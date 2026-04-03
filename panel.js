@@ -159,7 +159,38 @@ function testTelegram(token, chatId) {
   });
 }
 
-// ─── NORMALIZE DESCRIPTOR ────────────────────────────────────────────────────
+// ─── TEST NTFY ────────────────────────────────────────────────────────────────
+function testNtfy(url, token) {
+  return new Promise(resolve => {
+    if (!url) return resolve({ ok: false, error: 'URL não informada' });
+    let u;
+    try { u = new URL(url); } catch { return resolve({ ok: false, error: 'URL inválida' }); }
+    const text    = '🔔 BitTrack — teste de conexão OK';
+    const body    = Buffer.from(text, 'utf8');
+    const headers = {
+      'Content-Type':   'text/plain',
+      'Content-Length': body.length,
+      'Markdown':       'yes',
+    };
+    if (token) headers['Authorization'] = `Bearer ${token}`;
+    const req = https.request({
+      hostname: u.hostname,
+      path:     u.pathname,
+      method:   'POST',
+      headers,
+    }, res => {
+      let d = '';
+      res.on('data', c => d += c);
+      res.on('end', () => {
+        res.statusCode >= 200 && res.statusCode < 300
+          ? resolve({ ok: true })
+          : resolve({ ok: false, error: `HTTP ${res.statusCode}: ${d.trim()}` });
+      });
+    });
+    req.on('error', e => resolve({ ok: false, error: e.message }));
+    req.write(body); req.end();
+  });
+}
 function isBitcoinAddress(str) {
   str = str.trim();
   if (/^[13][a-km-zA-HJ-NP-Z1-9]{25,34}$/.test(str)) return true;
@@ -415,6 +446,11 @@ const server = http.createServer(async (req, res) => {
     const { token, chatId } = await bodyJSON(req);
     if (!token || !chatId) return json(res, { ok: false, error: 'token ou chatId não informados' });
     return json(res, await testTelegram(token, chatId));
+  }
+
+  if (url === '/api/test-ntfy' && req.method === 'POST') {
+    const { url: ntfyUrl, token } = await bodyJSON(req);
+    return json(res, await testNtfy(ntfyUrl, token));
   }
 
   if (url === '/api/derive' && req.method === 'POST') {

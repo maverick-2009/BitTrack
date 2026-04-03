@@ -35,8 +35,14 @@ const CONFIG_DEFAULTS = {
     tls:  false,
   },
   telegram: {
-    token:  '',
-    chatId: '',
+    enabled: true,
+    token:   '',
+    chatId:  '',
+  },
+  ntfy: {
+    enabled: false,
+    url:     '',
+    token:   '',
   },
   general: {
     mempoolExplorer: 'https://mempool.space/',
@@ -147,6 +153,7 @@ function loadConfig() {
     priceThresholdMinPct:    m.priceThresholdMinPct    ?? CONFIG_DEFAULTS.monitor.priceThresholdMinPct,
     priceThresholdMaxPct:    m.priceThresholdMaxPct    ?? CONFIG_DEFAULTS.monitor.priceThresholdMaxPct,
     notifications:         n,
+    ntfy:                  fc.ntfy || CONFIG_DEFAULTS.ntfy || {},
     reconnectDelay:        10000,
     stateFile:             path.join(dataDir, 'state.json'),
     walletsFile:           path.join(dataDir, 'wallets.json'),
@@ -493,7 +500,7 @@ async function flushConfirmedBuffer(key) {
   if (entries.length === 1) {
     const { txid, classification } = entries[0];
     const msg = buildTelegramMsg(classification, txid, height, false);
-    if (msg) await sendTelegram(msg);
+    if (msg) await sendNotification(msg);
     return;
   }
 
@@ -529,7 +536,7 @@ async function flushConfirmedBuffer(key) {
       txidList + '\n' +
       `🕐 ${now()}`;
 
-    await sendTelegram(msg);
+    await sendNotification(msg);
   }
 
 }
@@ -804,10 +811,10 @@ function loadWallets() {
 }
 
 
-// ─── TELEGRAM ─────────────────────────────────────────────────────────────────
+// ─── NOTIFICAÇÕES ────────────────────────────────────────────────────────────
 function sendTelegram(text) {
-  const { token, chatId } = getCFG().telegram;
-  if (!token || !chatId) return Promise.resolve();
+  const { enabled, token, chatId } = getCFG().telegram;
+  if (!enabled || !token || !chatId) return Promise.resolve();
   const body = JSON.stringify({ chat_id: chatId, text, parse_mode: 'HTML' });
   return new Promise(resolve => {
     const req = https.request({
@@ -819,6 +826,40 @@ function sendTelegram(text) {
     req.on('error', () => resolve());
     req.write(body); req.end();
   });
+}
+
+function sendNtfy(text) {
+  const { enabled, url, token } = getCFG().ntfy || {};
+  if (!enabled || !url) return Promise.resolve();
+  // Converte tags HTML do Telegram para Markdown do ntfy
+  const clean = text
+    .replace(/<b>(.*?)<\/b>/gi,                        '**$1**')   // negrito
+    .replace(/<i>(.*?)<\/i>/gi,                        '*$1*')     // itálico
+    .replace(/<code>(.*?)<\/code>/gi,                  '`$1`')     // inline code
+    .replace(/<a\b[^>]*href="([^"]*)"[^>]*>(.*?)<\/a>/gi, '[$2]($1)') // link
+    .replace(/<[^>]+>/g, '');                                       // tags restantes
+  const body  = Buffer.from(clean, 'utf8');
+  const u     = new URL(url);
+  const headers = {
+    'Content-Type':   'text/plain',
+    'Content-Length': body.length,
+    'Markdown':       'yes',
+  };
+  if (token) headers['Authorization'] = `Bearer ${token}`;
+  return new Promise(resolve => {
+    const req = https.request({
+      hostname: u.hostname,
+      path:     u.pathname,
+      method:   'POST',
+      headers,
+    }, res => { res.resume(); res.on('end', resolve); });
+    req.on('error', () => resolve());
+    req.write(body); req.end();
+  });
+}
+
+function sendNotification(text) {
+  return Promise.all([sendTelegram(text), sendNtfy(text)]);
 }
 
 // ─── CLASSIFICAÇÃO DE TRANSAÇÕES ─────────────────────────────────────────────
@@ -1300,7 +1341,7 @@ async function processChange(electrum, scriptHash, newStatusHash) {
       const msg = buildTelegramMsg(classification, txid, null, true);
       if (!msg) return;
       log.info(`📥 [${classification.type}] ${address.slice(0,20)}… ${txid.slice(0,16)}…`);
-      await sendTelegram(msg);
+      await sendNotification(msg);
     }
 
     // ── Confirmadas: acumula no buffer por (bloco, carteira) ─────────────────
@@ -1356,7 +1397,7 @@ async function processChange(electrum, scriptHash, newStatusHash) {
         writeTxHistory(cur);
         log.warn(`  [RBF/drop] ${txid.slice(0,16)}… removido do mempool sem confirmar (${wallet.name})`);
         if (notifEnabled('mempoolPending')) {
-          await sendTelegram(
+          await sendNotification(
             `⚠️ <b>Transação removida do mempool</b>\n` +
             `💼 <b>${wallet.name}</b>\n` +
             `🔗 <code>${txid}</code>\n` +
@@ -1425,7 +1466,7 @@ async function subscribeAll(electrum) {
       // Sem intervalo — envia imediatamente, um por um
       _pendingBlocks = [];
       log.info(`  [bloco] enviando notificação para bloco #${height}`);
-      await sendTelegram(
+      await sendNotification(
         `⛏️ <b>Novo bloco minerado</b>\n` +
         `🧱 Altura: <b>#${height}</b>\n` +
         `🕐 ${now()}`
@@ -1466,7 +1507,7 @@ async function subscribeAll(electrum) {
     if (!blocks.length) return;
     if (blocks.length === 1) {
       log.info(`  [bloco] enviando notificação para bloco #${blocks[0]}`);
-      await sendTelegram(
+      await sendNotification(
         `⛏️ <b>Novo bloco minerado</b>\n` +
         `🧱 Altura: <b>#${blocks[0]}</b>\n` +
         `🕐 ${now()}`
@@ -1474,7 +1515,7 @@ async function subscribeAll(electrum) {
     } else {
       const list = blocks.map(h => `#${h}`).join(', ');
       log.info(`  [bloco] enviando ${blocks.length} blocos acumulados: ${list}`);
-      await sendTelegram(
+      await sendNotification(
         `⛏️ <b>${blocks.length} blocos minerados</b>\n` +
         `🧱 <b>${list}</b>\n` +
         `🕐 ${now()}`
@@ -1834,8 +1875,10 @@ async function run() {
   log.info(`Endereços: ${addrMap.size} | Gap limit: ${_initCfg.gapLimit}`);
   log.info(`Electrum Server: ${_initCfg.electrum.host}:${_initCfg.electrum.port} ${_initCfg.electrum.tls ? '(TLS)' : '(TCP)'}`);
 
-  if (!_initCfg.telegram.token || !_initCfg.telegram.chatId)
-    log.warn('Telegram não configurado — defina TELEGRAM_TOKEN e TELEGRAM_CHAT_ID');
+  if (!_initCfg.telegram.enabled || !_initCfg.telegram.token || !_initCfg.telegram.chatId)
+    log.warn('Telegram não configurado ou desativado');
+  if (_initCfg.ntfy?.enabled && !_initCfg.ntfy?.url)
+    log.warn('ntfy ativado mas URL não configurada');
 
   // ── Monitor de preço BTC/USD ──────────────────────────────────────────────
   // Restaura referência salva no config.json para não perder ponto de
@@ -1937,7 +1980,7 @@ async function run() {
       if (enabled && delta >= threshold) {
         const dir  = price > _lastNotifiedPrice ? '📈' : '📉';
         const sign = price > _lastNotifiedPrice ? '+' : '-';
-        await sendTelegram(
+        await sendNotification(
           `${dir} <b>Variação de preço BTC</b>\n` +
           `💵 Preço atual: <b>${fmtPrice(price)}</b>\n` +
           `🔀 Variação: <b>${sign}${fmtPrice(Math.round(delta))}</b> <i>(${sign}${(delta / _lastNotifiedPrice * 100).toFixed(2)}%)</i>\n` +
@@ -1977,7 +2020,7 @@ async function run() {
       const ver = await electrum.call('server.version', ['BitTrack/5.0', '1.4']);
       log.info(`Servidor: ${Array.isArray(ver) ? ver.join(' / ') : ver}`);
 
-      await sendTelegram(msgStartup(addrMap.size, getCFG().gapLimit));
+      await sendNotification(msgStartup(addrMap.size, getCFG().gapLimit));
 
       await subscribeAll(electrum);
 

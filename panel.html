@@ -493,11 +493,35 @@ html, body { height: 100%; background: var(--bg); color: var(--text); font-famil
 
       <div class="card">
         <div class="card-label">configurações telegram</div>
+        <div class="field" style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
+          <label class="notif-toggle">
+            <input type="checkbox" id="tg-enabled" onchange="markSettingsDirty()">
+            <span class="notif-slider"></span>
+          </label>
+          <span style="font-size:13px;color:var(--text2)">Ativar notificações Telegram</span>
+        </div>
         <div class="field"><label>token</label><input id="tg-token" type="password" placeholder="1234567890:AAH..." oninput="markSettingsDirty()"/></div>
         <div class="field"><label>chat ID</label><input id="tg-chatid" placeholder="727926440" oninput="markSettingsDirty()"/></div>
         <div class="btn-row">
           <button class="btn btn-sm" onclick="testTelegram()">testar envio</button>
           <button class="btn btn-primary btn-sm" onclick="saveTelegram()">salvar</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-label">configurações ntfy</div>
+        <div class="field" style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
+          <label class="notif-toggle">
+            <input type="checkbox" id="ntfy-enabled" onchange="markSettingsDirty()">
+            <span class="notif-slider"></span>
+          </label>
+          <span style="font-size:13px;color:var(--text2)">Ativar notificações ntfy</span>
+        </div>
+        <div class="field"><label>URL do tópico</label><input id="ntfy-url" placeholder="https://ntfy.sh/meu-topico" oninput="markSettingsDirty()"/></div>
+        <div class="field"><label>token (opcional)</label><input id="ntfy-token" type="password" placeholder="tk_..." oninput="markSettingsDirty()"/></div>
+        <div class="btn-row">
+          <button class="btn btn-sm" onclick="testNtfy()">testar envio</button>
+          <button class="btn btn-primary btn-sm" onclick="saveNtfy()">salvar</button>
         </div>
       </div>
 
@@ -1611,8 +1635,14 @@ async function removeServer(i){
 
 function renderSettings(){
   if(cfg.telegram){
+    if(cfg.telegram.enabled !== undefined) document.getElementById('tg-enabled').checked = cfg.telegram.enabled;
     if(cfg.telegram.token) document.getElementById('tg-token').value=cfg.telegram.token;
     if(cfg.telegram.chatId) document.getElementById('tg-chatid').value=cfg.telegram.chatId;
+  }
+  if(cfg.ntfy){
+    if(cfg.ntfy.enabled !== undefined) document.getElementById('ntfy-enabled').checked = cfg.ntfy.enabled;
+    if(cfg.ntfy.url)   document.getElementById('ntfy-url').value   = cfg.ntfy.url;
+    if(cfg.ntfy.token) document.getElementById('ntfy-token').value = cfg.ntfy.token;
   }
   const mon=cfg.monitor||{};
   if(mon.gapLimit) document.getElementById('cfg-gap').value=mon.gapLimit;
@@ -1725,8 +1755,29 @@ async function testTelegram(){
 }
 
 async function saveTelegram(){
-  const telegram={token:document.getElementById('tg-token').value.trim(),chatId:document.getElementById('tg-chatid').value.trim()};
+  const telegram={
+    enabled: document.getElementById('tg-enabled').checked,
+    token:   document.getElementById('tg-token').value.trim(),
+    chatId:  document.getElementById('tg-chatid').value.trim(),
+  };
   cfg.telegram=telegram; await savePatch({telegram}); clearSettingsDirty(); toast('telegram salvo','ok');
+}
+
+async function testNtfy(){
+  const url=document.getElementById('ntfy-url').value.trim();
+  const token=document.getElementById('ntfy-token').value.trim();
+  if(!url) return toast('preencha a URL do tópico','err');
+  const d=await apiFetch('/api/test-ntfy',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({url,token})});
+  d.ok?toast('mensagem enviada','ok'):toast('falhou: '+d.error,'err');
+}
+
+async function saveNtfy(){
+  const ntfy={
+    enabled: document.getElementById('ntfy-enabled').checked,
+    url:     document.getElementById('ntfy-url').value.trim(),
+    token:   document.getElementById('ntfy-token').value.trim(),
+  };
+  cfg.ntfy=ntfy; await savePatch({ntfy}); clearSettingsDirty(); toast('ntfy salvo','ok');
 }
 
 async function saveMonitorCfg(){
