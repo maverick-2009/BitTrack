@@ -840,6 +840,7 @@ function sendNtfy(text) {
     .replace(/<[^>]+>/g, '');                                       // tags restantes
   const body  = Buffer.from(clean, 'utf8');
   const u     = new URL(url);
+  const lib   = u.protocol === 'https:' ? require('https') : require('http');
   const headers = {
     'Content-Type':   'text/plain',
     'Content-Length': body.length,
@@ -847,8 +848,9 @@ function sendNtfy(text) {
   };
   if (token) headers['Authorization'] = `Bearer ${token}`;
   return new Promise(resolve => {
-    const req = https.request({
+    const req = lib.request({
       hostname: u.hostname,
+      port:     u.port || (u.protocol === 'https:' ? 443 : 80),
       path:     u.pathname,
       method:   'POST',
       headers,

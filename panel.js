@@ -173,8 +173,10 @@ function testNtfy(url, token) {
       'Markdown':       'yes',
     };
     if (token) headers['Authorization'] = `Bearer ${token}`;
-    const req = https.request({
+    const lib = u.protocol === 'https:' ? require('https') : require('http');
+    const req = lib.request({
       hostname: u.hostname,
+      port:     u.port || (u.protocol === 'https:' ? 443 : 80),
       path:     u.pathname,
       method:   'POST',
       headers,
