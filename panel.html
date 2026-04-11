@@ -1,0 +1,2746 @@
+<!DOCTYPE html>
+<html lang="en-US">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<title>BitTrack</title>
+<link rel="icon" type="image/png" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAADkUlEQVR4nG1Te0xTdxQ+v3tvoTa0aFtNYUUF8bG5mG3I5gQpimW4B6tYnGEu+JhDM4eyLNsymE4kM8uwf9jNuYUlvgYLyAxuYzqxTKh7BGImNqKF8VBmH1pK37fl3t9ZSmLiDOevc3LOd77kO+cjME2MFsECdUbKPhbQCEBEitAYHnbUqc/D2KOzzMOFzWZLCo4N1qTqVnfLMPgGUnpVoHiNRWGHYs3L1pBzaM9w57B0OlLIet5ufGevuw8R8e5FC5pe/KgD4E/FbS0oA+XyLrzaEm/h9gpnz/KVA8UPcKS0tJl1erJNEomykpBAYKNRdrrdQrLvT0ifLi2mN3cpP+XIldOZqErrOTv3VN9XjdLNDJHKxEnfoS7L/GrIXTtYsLrQjXn6sc6lWfYF8a3WwswN/fWfBDDiQQy5MGpa77v3EkyxLsv9Z5FO77iSr3cIOTr7CiYWYZ8VKQd8MHjQ1rvQFRl3tq4wZH+/5FZdSDAZDgiHS2rZG+f5ma9uPRPxupqudWeM8tHIZwgz2KjIPsNsfl3Ops9n4M6/6APgNZxitqF9zjHOOHDhuvrEuROqkz+c3DT48w3LY19IOIWqBABUdqdmfGEmA1vK5BwgYrU/jPhhtcO0eLFV3tHhXKYvdp1dpfdgXsGdUF7BWDh3rQeLDM4zrReiT9oKQTn0Ze3RWCwuKV/JBI5XMXLH7yAKs6rUmvS/zrULc39tu2wkgu81QliOEAaB+td/sKd/05rekiUZaYredMnNXbZ+AQ7Veyn4tyr20coUrNv47eFtb/vtE+Gpa+2NC5abPzqSkz9yPZ4LGK7BmAfFupW3msvfNecXeTArZ2Q3BwkykSBCdeL2Jpch8XjywMw+3jGSBkBAPZsFQKDxBY1NoXlarQIiTzS8UtWSkrpIA7vliYAcRdIjIgCfpKmRfPfWN5RlQBAxhkiJ+x4vQ0Ta1gpwxByaJEwUJwVuXqY68B5SCQpU+JtL9jou+ZWaBkWC+CabvvwFWKoD2t1CCWFRFCNfiyLyiACpWqm4Tp8El7vYH51uWaIojJutv536Y+odO3XAecuTd/D1htG4ADFLg91XlrDuwbt6y2aU+K1tt+O9bRXuoedWDW8B2P8/H02Fo/XonAhi7eRPn4+LFbMwWKG5GNypseBOJQqXjt0PI35sNo+pHsaQ6Yx19/28x5N8A/slDGwAQCpS0jyheeqg9sAv9kdn/wNSqsp+2Gl6sAAAAABJRU5ErkJggg==">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+:root {
+  --bg: #0a0a0a;
+  --surface: #141414;
+  --surface2: #1c1c1c;
+  --border: #2a2a2a;
+  --border2: #3a3a3a;
+  --text: #f0f0f0;
+  --text2: #aaaaaa;
+  --text3: #666666;
+  --accent: #f0c040;
+  --accent2: #c89a20;
+  --green: #4ade80;
+  --red: #f87171;
+  --blue: #60a5fa;
+  --mono: 'Courier New', 'Consolas', monospace;
+  --sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+}
+
+/* ── Light theme ─────────────────────────────────────────────────────────────*/
+html.light {
+  --bg: #f4f4f5;
+  --surface: #ffffff;
+  --surface2: #f0f0f0;
+  --border: #e0e0e0;
+  --border2: #cccccc;
+  --text: #111111;
+  --text2: #444444;
+  --text3: #888888;
+  --accent: #b8860b;
+  --accent2: #8b6508;
+  --green: #16a34a;
+  --red: #dc2626;
+  --blue: #2563eb;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { height: 100%; background: var(--bg); color: var(--text); font-family: var(--sans); font-size: 15px; line-height: 1.5; }
+
+.login-wrap { display: flex; align-items: center; justify-content: center; min-height: 100vh; min-height: 100dvh; padding: 20px; }
+.login-box { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 40px; width: min(340px, 100%); }
+.login-title { font-family: var(--mono); font-size: 20px; color: var(--accent); margin-bottom: 4px; }
+.login-sub { font-size: 13px; color: var(--text3); margin-bottom: 28px; }
+.login-error { font-size: 12px; color: var(--red); margin-top: 10px; font-family: var(--mono); display: none; }
+
+.shell { display: flex; height: 100vh; overflow: hidden; }
+.sidebar { width: 210px; flex-shrink: 0; border-right: 1px solid var(--border); display: flex; flex-direction: column; padding: 20px 0; }
+.main { flex: 1; overflow-y: auto; padding: 32px 36px; }
+
+.logo { padding: 0 20px 24px; border-bottom: 1px solid var(--border); margin-bottom: 16px; }
+.logo-mark { font-family: var(--mono); font-size: 19px; font-weight: 500; color: var(--accent); }
+.logo-sub { font-size: 11px; color: var(--text3); letter-spacing: 0.1em; text-transform: uppercase; margin-top: 3px; }
+.nav-item { display: flex; align-items: center; gap: 10px; padding: 10px 20px; color: var(--text2); cursor: pointer; font-size: 14px; transition: all 0.15s; border-left: 2px solid transparent; }
+.nav-item:hover { color: var(--text); background: var(--surface); }
+.nav-item.active { color: var(--accent); border-left-color: var(--accent); background: rgba(240,192,64,0.05); }
+.nav-icon { width: 16px; height: 16px; flex-shrink: 0; opacity: 0.5; }
+.nav-item.active .nav-icon { opacity: 1; }
+.status-bar { margin-top: auto; padding: 16px 20px; border-top: 1px solid var(--border); }
+.status-dot { display: inline-block; width: 7px; height: 7px; border-radius: 50%; background: var(--text3); margin-right: 7px; vertical-align: middle; }
+.status-dot.ok { background: var(--green); box-shadow: 0 0 6px var(--green); }
+.status-dot.err { background: var(--red); }
+.status-text { font-size: 12px; color: var(--text2); font-family: var(--mono); }
+
+.page { display: none; }
+.page.active { display: block; }
+.page-title { font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--text3); margin-bottom: 28px; font-family: var(--mono); }
+
+.card { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 22px; margin-bottom: 16px; }
+.card-label { font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text2); margin-bottom: 16px; font-family: var(--mono); font-weight: 500; }
+
+.metrics { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 20px; align-items: stretch; }
+.metric { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 16px 18px; display: flex; flex-direction: column; justify-content: center; }
+.metric-label { font-size: 10px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text3); margin-bottom: 8px; font-family: var(--mono); font-weight: 500; }
+.metric-val { font-family: var(--mono); font-size: 22px; font-weight: 500; color: var(--text); line-height: 1.15; }
+
+.field { margin-bottom: 16px; }
+.field label { display: block; font-size: 12px; color: var(--text2); margin-bottom: 7px; font-family: var(--mono); }
+.field input, .field select, .field textarea {
+  width: 100%; padding: 9px 12px; background: var(--surface2); border: 1px solid var(--border);
+  border-radius: 5px; color: var(--text); font-family: var(--mono); font-size: 14px;
+  transition: border-color 0.15s; outline: none;
+}
+.field input:focus, .field select:focus, .field textarea:focus { border-color: var(--border2); }
+.field input:-webkit-autofill,
+.field input:-webkit-autofill:hover,
+.field input:-webkit-autofill:focus {
+  -webkit-text-fill-color: #f0f0f0;
+  -webkit-box-shadow: 0 0 0px 1000px #1c1c1c inset;
+  transition: background-color 5000s ease-in-out 0s;
+  caret-color: #f0f0f0;
+}
+::placeholder { color: #555; opacity: 1; }
+.field textarea { resize: vertical; min-height: 72px; line-height: 1.6; }
+.field select option { background: var(--surface2); }
+.field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.field-row3 { display: grid; grid-template-columns: 2fr 1fr 100px; gap: 12px; }
+
+.btn { padding: 8px 16px; border-radius: 5px; font-family: var(--mono); font-size: 12px; cursor: pointer; transition: all 0.15s; border: 1px solid var(--border2); background: none; color: var(--text2); }
+.btn:hover { color: var(--text); border-color: #555; }
+.btn-primary { background: var(--accent); color: #000; border-color: var(--accent); font-weight: 500; }
+.btn-primary:hover { background: var(--accent2); border-color: var(--accent2); }
+.btn-danger { color: var(--red); border-color: rgba(248,113,113,0.3); }
+.btn-danger:hover { background: rgba(248,113,113,0.08); }
+.btn-sm { padding: 6px 12px; font-size: 12px; }
+.btn-row { display: flex; gap: 8px; justify-content: flex-end; margin-top: 16px; }
+
+.server-item { display: flex; align-items: center; gap: 12px; padding: 14px 0; border-bottom: 1px solid var(--border); }
+.server-item:last-child { border-bottom: none; }
+.server-info { flex: 1; }
+.server-name { font-size: 14px; font-weight: 500; color: var(--text); }
+.server-addr { font-family: var(--mono); font-size: 12px; color: var(--text2); margin-top: 3px; }
+.server-actions { display: flex; gap: 6px; align-items: center; }
+.badge { display: inline-block; padding: 3px 8px; border-radius: 3px; font-size: 11px; font-family: var(--mono); }
+.badge-net { background: rgba(96,165,250,0.15); color: var(--blue); }
+.badge-selected { background: rgba(240,192,64,0.15); color: var(--accent); }
+.badge-local { background: rgba(74,222,128,0.15); color: var(--green); }
+
+.wallet-item { background: var(--surface2); border: 1px solid var(--border); border-radius: 7px; padding: 16px; margin-bottom: 12px; }
+.wallet-item:last-child { margin-bottom: 0; }
+.wallet-header { display: flex; align-items: center; gap: 10px; margin-bottom: 7px; }
+.wallet-name { font-size: 14px; font-weight: 500; color: var(--text); flex: 1; }
+.wallet-desc { font-family: var(--mono); font-size: 12px; color: var(--text2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; }
+.wallet-meta { font-size: 12px; color: var(--text2); margin-top: 5px; }
+.wallet-notif { display: flex; gap: 20px; margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--border); flex-wrap: wrap; }
+.wallet-notif-item { display: flex; align-items: center; gap: 10px; }
+.wallet-notif-item .wn-label { display: flex; flex-direction: column; }
+.wallet-notif-item .wn-title { font-size: 12px; color: var(--text); font-weight: 500; }
+.wallet-notif-item .wn-desc  { font-size: 11px; color: var(--text3); font-family: var(--mono); margin-top: 1px; }
+.wn-toggle { position: relative; width: 36px; height: 20px; flex-shrink: 0; }
+.wn-toggle input { opacity: 0; width: 0; height: 0; position: absolute; }
+.wn-slider { position: absolute; inset: 0; border-radius: 20px; background: var(--border2); cursor: pointer; transition: background .2s; }
+.wn-slider:before { content: ''; position: absolute; left: 3px; top: 3px; width: 14px; height: 14px; border-radius: 50%; background: var(--text3); transition: transform .2s, background .2s; }
+.wn-toggle input:checked + .wn-slider { background: rgba(240,192,64,0.3); }
+.wn-toggle input:checked + .wn-slider:before { transform: translateX(16px); background: var(--accent); }
+
+.addr-table { width: 100%; border-collapse: collapse; font-family: var(--mono); font-size: 12px; table-layout: fixed; }
+.addr-table th { text-align: left; padding: 10px 12px; color: var(--text2); font-weight: 500; font-size: 11px; letter-spacing: 0.06em; border-bottom: 1px solid var(--border); overflow: hidden; white-space: nowrap; }
+.addr-table td { padding: 9px 12px; border-bottom: 1px solid var(--border); color: var(--text2); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.addr-table colgroup col:nth-child(1) { width:  5%; }  /* # */
+.addr-table colgroup col:nth-child(2) { width:  8%; }  /* type */
+.addr-table colgroup col:nth-child(3) { width: 16%; }  /* wallet */
+.addr-table colgroup col:nth-child(4) { width: 45%; }  /* address */
+.addr-table colgroup col:nth-child(5) { width: 18%; }  /* balance */
+.addr-table colgroup col:nth-child(6) { width:  8%; }  /* txs */
+.addr-table tr:last-child td { border-bottom: none; }
+.addr-table tr:hover td { background: var(--surface2); }
+.has-balance { color: var(--green) !important; }
+.chip { display: inline-block; padding: 2px 7px; border-radius: 3px; font-size: 11px; }
+.chip-ext { background: rgba(96,165,250,0.12); color: var(--blue); }
+.chip-chg { background: rgba(240,192,64,0.12); color: var(--accent); }
+
+.price-display { display: flex; align-items: baseline; gap: 14px; }
+.price-big { font-family: var(--mono); font-size: 34px; font-weight: 500; color: var(--accent); }
+.price-change { font-family: var(--mono); font-size: 13px; padding: 3px 9px; border-radius: 4px; }
+.price-up { background: rgba(74,222,128,0.12); color: var(--green); }
+.price-dn { background: rgba(248,113,113,0.1); color: var(--red); }
+.price-meta { font-size: 12px; color: var(--text3); margin-top: 7px; font-family: var(--mono); }
+
+
+/* ── Charts ────────────────────────────────────────────────────────────────*/
+.chart-wrap { position: relative; width: 100%; height: 220px; }
+@media (max-width: 640px) { .chart-wrap { height: 160px; } }
+
+/* ── Transaction table ──────────────────────────────────────────────────────*/
+.tx-table { width: 100%; border-collapse: collapse; font-family: var(--mono); font-size: 12px; table-layout: fixed; }
+.tx-table th { text-align: left; padding: 9px 12px; color: var(--text2); font-weight: 500; font-size: 11px; letter-spacing: 0.06em; border-bottom: 1px solid var(--border); overflow: hidden; white-space: nowrap; }
+.tx-table td { padding: 9px 12px; border-bottom: 1px solid var(--border); color: var(--text2); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.tx-table colgroup col:nth-child(1) { width: 10%; }  /* type */
+.tx-table colgroup col:nth-child(2) { width: 15%; }  /* wallet */
+.tx-table colgroup col:nth-child(3) { width: 13%; }  /* value */
+.tx-table colgroup col:nth-child(4) { width: 42%; }  /* txid */
+.tx-table colgroup col:nth-child(5) { width: 20%; }  /* block/status */
+.tx-table tr:last-child td { border-bottom: none; }
+.tx-table tr:hover td { background: var(--surface2); }
+.tx-type-recv { color: var(--green); }
+.tx-type-sent { color: var(--red); }
+.tx-type-cons { color: var(--blue); }
+.tx-mempool   { color: var(--accent); font-style: italic; }
+.tx-pagination { display: flex; align-items: center; gap: 8px; justify-content: flex-end; margin-top: 14px; flex-wrap: wrap; }
+.tx-pagination button { padding: 5px 11px; border-radius: 4px; font-family: var(--mono); font-size: 11px; cursor: pointer; border: 1px solid var(--border2); background: none; color: var(--text2); }
+.tx-pagination button:hover { color: var(--text); border-color: #555; }
+.tx-pagination button:disabled { opacity: 0.3; cursor: default; }
+.tx-pagination .pg-info { font-family: var(--mono); font-size: 11px; color: var(--text3); }
+@media (max-width: 900px) and (min-width: 641px) {
+  .tx-table colgroup col:nth-child(2) { width: 12%; }  /* wallet */
+  .tx-table colgroup col:nth-child(4) { width: 36%; }  /* txid — less space on tablet */
+  .tx-table colgroup col:nth-child(5) { width: 18%; }  /* block/status */
+}
+.addr-cards, .tx-cards { display: none; } /* hidden on desktop */
+
+@media (max-width: 640px) {
+  /* Transactions: hide table, show cards */
+  .tx-table, .tx-table thead { display: none; }
+  .tx-cards { display: flex; flex-direction: column; gap: 1px; }
+}
+
+/* ── Wallet labels ──────────────────────────────────────────────────────────*/
+.w-label-badge { display: inline-block; padding: 2px 8px; border-radius: 3px; font-size: 11px; font-family: var(--mono); font-weight: 500; margin-left: 6px; vertical-align: middle; }
+.label-edit-row { display: flex; gap: 8px; align-items: center; margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--border); flex-wrap: wrap; }
+.label-color-pick { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
+.label-swatch { width: 18px; height: 18px; border-radius: 3px; cursor: pointer; border: 2px solid transparent; flex-shrink: 0; }
+.label-swatch.active { border-color: var(--text); }
+
+.filters { display: flex; gap: 8px; margin-bottom: 16px; }
+.filters select { padding: 7px 11px; background: var(--surface); border: 1px solid var(--border); border-radius: 5px; color: var(--text2); font-family: var(--mono); font-size: 12px; outline: none; cursor: pointer; }
+.filters select:hover { border-color: var(--border2); color: var(--text); }
+
+.divider { height: 1px; background: var(--border); margin: 18px 0; }
+
+.toast { position: fixed; bottom: 24px; right: 24px; background: var(--surface2); border: 1px solid var(--border2); border-radius: 6px; padding: 12px 18px; font-family: var(--mono); font-size: 13px; transform: translateY(80px); opacity: 0; transition: all 0.3s; z-index: 200; }
+.toast.show { transform: translateY(0); opacity: 1; }
+.toast.ok { border-color: rgba(74,222,128,0.4); color: var(--green); }
+.toast.err { border-color: rgba(248,113,113,0.4); color: var(--red); }
+
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 2px; }
+
+/* ─── LOADING OVERLAY ────────────────────────────────────────────────────────*/
+.loading-overlay { position: fixed; inset: 0; background: rgba(10,10,10,0.75); z-index: 500; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 16px; backdrop-filter: blur(2px); }
+.loading-overlay.hidden { display: none; }
+.loading-spinner { width: 36px; height: 36px; border: 3px solid var(--border2); border-top-color: var(--accent); border-radius: 50%; animation: spin 0.7s linear infinite; }
+.loading-msg { font-family: var(--mono); font-size: 13px; color: var(--text2); }
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.add-form { display: none; }
+.add-form.open { display: block; }
+
+/* ─── iOS / mobile fixes ─────────────────────────────────────────────────────*/
+* { -webkit-tap-highlight-color: transparent; }
+.sidebar { padding-bottom: env(safe-area-inset-bottom); }
+@media (max-width: 640px) {
+  .main { padding-bottom: calc(80px + env(safe-area-inset-bottom)); }
+}
+
+/* ─── RESPONSIVO (mobile) ────────────────────────────────────────────────────*/
+@media (max-width: 900px) and (min-width: 641px) {
+  .addr-table colgroup col:nth-child(1) { width:  5%; }
+  .addr-table colgroup col:nth-child(2) { width: 10%; }
+  .addr-table colgroup col:nth-child(3) { width: 14%; }
+  .addr-table colgroup col:nth-child(4) { width: 42%; }
+  .addr-table colgroup col:nth-child(5) { width: 21%; }
+  .addr-table colgroup col:nth-child(6) { width:  8%; }
+}
+@media (max-width: 640px) {
+  .shell { flex-direction: column; }
+  .sidebar {
+    width: 100%; height: auto; flex-direction: row;
+    border-right: none; border-top: 1px solid var(--border);
+    padding: 0; order: 2;
+    position: fixed; bottom: 0; left: 0; right: 0;
+    z-index: 100; background: var(--surface);
+  }
+  .sidebar .logo { display: none; }
+  .sidebar .status-bar { display: none; }
+  .sidebar nav { display: flex; flex-direction: row; width: 100%; justify-content: space-around; }
+  .nav-item {
+    flex: 1; flex-direction: column; gap: 4px;
+    padding: 10px 4px 12px; font-size: 10px;
+    border-left: none; border-top: 2px solid transparent;
+    justify-content: center; text-align: center;
+  }
+  .nav-item.active { border-left: none; border-top-color: var(--accent); background: rgba(240,192,64,0.05); }
+  .nav-icon { width: 20px; height: 20px; }
+  .main { padding: 16px; padding-bottom: 80px; order: 1; height: 100vh; overflow-y: auto; }
+  .metrics { grid-template-columns: repeat(2, 1fr); }
+  .metric-val { font-size: 16px; }
+  /* Addresses: hide table, show cards */
+  .addr-table, .addr-table thead { display: none; }
+  .addr-cards { display: flex; flex-direction: column; gap: 1px; }
+  .field-row  { grid-template-columns: 1fr; }
+  .field-row3 { grid-template-columns: 1fr; }
+  .card { padding: 14px; }
+  .price-big { font-size: 24px; }
+  .toast { bottom: 80px; right: 12px; left: 12px; text-align: center; }
+  .login-box { width: 90%; padding: 28px 20px; }
+  .filters { flex-wrap: wrap; }
+  .filters select { flex: 1; min-width: 100px; }
+  .page-title { margin-bottom: 16px; }
+  .btn-row { flex-wrap: wrap; }
+  .btn-row .btn { flex: 1; text-align: center; }
+  .wallet-notif { gap: 12px; }
+  /* iOS: inputs with font-size < 16px trigger auto-zoom on focus */
+  input, select, textarea { font-size: 16px !important; }
+}
+
+/* ── Mobile card layout for tables ─────────────────────────────────────────*/
+.m-card {
+  padding: 11px 14px;
+  border-bottom: 1px solid var(--border);
+  font-family: var(--mono);
+  font-size: 12px;
+}
+.m-card:last-child { border-bottom: none; }
+.m-card-row { display: flex; justify-content: space-between; align-items: center; gap: 8px; margin-bottom: 4px; }
+.m-card-row:last-child { margin-bottom: 0; }
+.m-card-addr { color: var(--text2); font-size: 11px; word-break: break-all; margin-top: 3px; line-height: 1.5; }
+.m-card-label { color: var(--text3); font-size: 10px; letter-spacing: 0.05em; text-transform: uppercase; }
+.m-card-val   { color: var(--text); font-size: 12px; }
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div id="login-screen" class="login-wrap">
+  <div class="login-box">
+    <div class="login-title">BitTrack</div>
+    <div class="login-sub" data-i18n="login_sub">monitor v5 · restricted access</div>
+    <div class="field">
+      <label data-i18n="login_password">password</label>
+      <input id="login-pw" type="password" placeholder="••••••••" onkeydown="if(event.key==='Enter')doLogin()"/>
+    </div>
+    <button class="btn btn-primary" style="width:100%" onclick="doLogin()" data-i18n="login_btn">sign in</button>
+    <div class="login-error" id="login-error">incorrect password</div>
+  </div>
+</div>
+
+<!-- APP -->
+<div id="app" style="display:none;height:100%">
+<div class="shell">
+  <aside class="sidebar">
+    <div class="logo">
+      <div class="logo-mark">BitTrack</div>
+      <div class="logo-sub" data-i18n="logo_sub">monitor v5</div>
+    </div>
+    <nav>
+      <div class="nav-item active" onclick="nav('overview')">
+        <svg class="nav-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5">
+          <rect x="1" y="1" width="6" height="6" rx="1"/><rect x="9" y="1" width="6" height="6" rx="1"/>
+          <rect x="1" y="9" width="6" height="6" rx="1"/><rect x="9" y="9" width="6" height="6" rx="1"/>
+        </svg>
+        <span data-i18n="nav_overview">Overview</span>
+      </div>
+      <div class="nav-item" onclick="nav('wallets')">
+        <svg class="nav-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5">
+          <rect x="1" y="4" width="14" height="10" rx="1.5"/>
+          <path d="M4 4V3a1 1 0 011-1h6a1 1 0 011 1v1"/>
+          <circle cx="11" cy="9" r="1.5" fill="currentColor" stroke="none"/>
+        </svg>
+        <span data-i18n="nav_wallets">Wallets</span>
+      </div>
+      <div class="nav-item" onclick="nav('transactions')">
+        <svg class="nav-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5">
+          <path d="M2 5h12M2 8h8M2 11h10"/>
+          <path d="M11 2l3 3-3 3" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        <span data-i18n="nav_transactions">Transactions</span>
+      </div>
+      <div class="nav-item" onclick="nav('addresses')">
+        <svg class="nav-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5">
+          <path d="M2 4h12M2 8h8M2 12h10"/>
+        </svg>
+        <span data-i18n="nav_addresses">Addresses</span>
+      </div>
+      <div class="nav-item" onclick="nav('settings')">
+        <svg class="nav-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5">
+          <circle cx="8" cy="8" r="2.5"/>
+          <path d="M8 1v2M8 13v2M1 8h2M13 8h2M3.05 3.05l1.41 1.41M11.54 11.54l1.41 1.41M3.05 12.95l1.41-1.41M11.54 4.46l1.41-1.41"/>
+        </svg>
+        <span data-i18n="nav_settings">Settings</span>
+      </div>
+    </nav>
+    <div class="status-bar">
+      <div><span class="status-dot" id="conn-dot"></span><span class="status-text" id="conn-text" data-i18n="status_loading">loading...</span></div>
+      <button id="theme-toggle" onclick="toggleTheme()" title="Toggle light/dark theme" style="background:none;border:none;cursor:pointer;color:var(--text3);font-size:16px;padding:4px;line-height:1;margin-top:4px">🌙</button>
+    </div>
+  </aside>
+
+  <main class="main">
+
+    <!-- OVERVIEW -->
+    <div id="page-overview" class="page active">
+      <div class="page-title" data-i18n="page_overview">// overview</div>
+
+      <!-- Main metrics -->
+      <div class="metrics" id="metrics-grid">
+        <div class="metric">
+          <div class="metric-label" data-i18n="metric_balance">confirmed balance (BTC)</div>
+          <div class="metric-val" id="m-total">—</div>
+          <div id="m-mempool-line" style="display:none;font-family:var(--mono);font-size:11px;margin-top:6px"></div>
+        </div>
+        <div class="metric">
+          <div class="metric-label" id="m-total-fiat-label">valor em USD</div>
+          <div class="metric-val" id="m-total-fiat">—</div>
+          <div style="font-size:11px;font-family:var(--mono);color:var(--text3);margin-top:6px" data-i18n="metric_balance">confirmed balance (BTC)</div>
+        </div>
+        <div class="metric">
+          <div class="metric-label" data-i18n="metric_wallets">wallets</div>
+          <div class="metric-val" id="m-wallets">—</div>
+          <div style="font-size:11px;font-family:var(--mono);color:var(--text3);margin-top:6px">—</div>
+        </div>
+        <div class="metric" id="m-fees-metric" style="display:none">
+          <div class="metric-label" data-i18n="metric_fees">fees (sat/vB)</div>
+          <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-top:2px">
+            <div style="text-align:center">
+              <div style="font-family:var(--mono);font-size:18px;font-weight:500;color:var(--green);line-height:1.15" id="fee-fast-m">—</div>
+              <div style="font-size:10px;color:var(--text3);font-family:var(--mono);margin-top:3px" data-i18n="fee_fast">fast</div>
+            </div>
+            <div style="text-align:center;border-left:1px solid var(--border);border-right:1px solid var(--border)">
+              <div style="font-family:var(--mono);font-size:18px;font-weight:500;color:var(--accent);line-height:1.15" id="fee-med-m">—</div>
+              <div style="font-size:10px;color:var(--text3);font-family:var(--mono);margin-top:3px" data-i18n="fee_med">medium</div>
+            </div>
+            <div style="text-align:center">
+              <div style="font-family:var(--mono);font-size:18px;font-weight:500;color:var(--text2);line-height:1.15" id="fee-slow-m">—</div>
+              <div style="font-size:10px;color:var(--text3);font-family:var(--mono);margin-top:3px" data-i18n="fee_slow">slow</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Price + price chart -->
+      <div class="card" id="price-card" style="display:none">
+        <div class="card-label" data-i18n="price_card_label">bitcoin price</div>
+        <div class="price-display">
+          <div class="price-big" id="price-val">—</div>
+          <div class="price-change" id="price-change">—</div>
+        </div>
+        <div class="price-meta" id="price-meta">—</div>
+        <div style="height:16px"></div>
+        <div class="chart-wrap"><canvas id="chart-price"></canvas></div>
+      </div>
+
+      <!-- BTC portfolio over time -->
+      <div class="card" id="portfolio-card" style="display:none">
+        <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:14px">
+          <div class="card-label" style="margin:0" data-i18n="portfolio_label">portfolio over time (BTC)</div>
+          <select id="pf-filter-wallet" onchange="renderPortfolioChart()" style="padding:5px 9px;background:var(--surface2);border:1px solid var(--border);border-radius:4px;color:var(--text2);font-family:var(--mono);font-size:12px;outline:none">
+            <option value="">${p('portfolio_all')}</option>
+          </select>
+        </div>
+        <!-- Etiqueta de mempool pendente — uma linha por carteira -->
+        <div id="pf-mempool-notice" style="display:none;margin-bottom:10px"></div>
+        <div class="chart-wrap"><canvas id="chart-portfolio"></canvas></div>
+      </div>
+
+      <!-- Electrum server — always last -->
+       <!-- DESATIVADO TEMPORARIAMENTE -->
+      <div class="card" style="display:none">
+        <div class="card-label" data-i18n="settings_electrum">electrum server</div>
+        <div id="ov-server"><div style="color:var(--text3);font-family:var(--mono);font-size:13px" data-i18n="server_no_config">no server configured</div></div>
+      </div>
+    </div>
+
+    <!-- TRANSACTIONS -->
+    <div id="page-transactions" class="page">
+      <div class="page-title" data-i18n="page_transactions">// transactions</div>
+      <div class="card">
+        <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:14px">
+          <div class="card-label" style="margin:0" data-i18n="tx_page_title">transaction history</div>
+          <select id="tx-filter-wallet" onchange="renderTxHistory()" style="padding:5px 9px;background:var(--surface2);border:1px solid var(--border);border-radius:4px;color:var(--text2);font-family:var(--mono);font-size:12px;outline:none">
+            <option value="" data-i18n="portfolio_all">all wallets</option>
+          </select>
+        </div>
+        <div style="overflow-x:auto">
+          <table class="tx-table">
+            <colgroup><col/><col/><col/><col/><col/></colgroup>
+            <thead><tr>
+              <th data-i18n="tx_col_type">type</th><th data-i18n="tx_col_wallet">wallet</th><th style="text-align:right" data-i18n="tx_col_value">value (BTC)</th>
+              <th data-i18n="tx_col_txid">txid</th><th data-i18n="tx_col_status">block / status</th>
+            </tr></thead>
+            <tbody id="tx-tbody"></tbody>
+          </table>
+          <div class="tx-cards" id="tx-cards"></div>
+        </div>
+        <div class="tx-pagination">
+          <button id="tx-prev" onclick="txPage(-1)" disabled>‹ anterior</button>
+          <span class="pg-info" id="tx-pginfo"></span>
+          <button id="tx-next" onclick="txPage(1)" data-i18n="tx_next">next ›</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- WALLETS -->
+    <div id="page-wallets" class="page">
+      <div class="page-title" data-i18n="page_wallets">// wallets</div>
+      <div class="card">
+        <div class="card-label" data-i18n="wallets_title">configured descriptors</div>
+        <div id="wallet-list"><div style="color:var(--text3);font-size:13px;font-family:var(--mono)">carregando...</div></div>
+      </div>
+      <div class="card">
+        <div style="display:flex;justify-content:space-between;align-items:center;cursor:pointer" onclick="toggleAddWallet()">
+          <div class="card-label" style="margin:0" data-i18n="wallet_add_title">+ add wallet</div>
+          <svg id="add-chevron" style="width:14px;height:14px;color:var(--text3);transition:transform .2s" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 6l4 4 4-4"/></svg>
+        </div>
+        <div id="add-wallet-form" class="add-form">
+          <div class="divider"></div>
+          <div class="field"><label data-i18n="wallet_field_name">name</label><input id="w-name" placeholder="ex: Cold Storage"/></div>
+          <div class="field"><label data-i18n="wallet_field_start">startIndex</label><input id="w-start" type="number" value="0" style="max-width:100px"/></div>
+          <div class="field"><label data-i18n="wallet_field_descriptor">descriptor</label>
+            <textarea id="w-desc" placeholder="tr([fingerprint/path]xpub.../<0;1>/*)" oninput="autoDetectDescriptor(this.value)"></textarea>
+          </div>
+          <div id="w-autodetect" style="font-size:12px;color:var(--text3);font-family:var(--mono);margin-bottom:8px;display:none"></div>
+          <div id="w-preview" style="font-family:var(--mono);font-size:12px;color:var(--text2);margin-bottom:8px;display:none;line-height:1.8"></div>
+          <div class="btn-row">
+            <button class="btn btn-sm" onclick="previewDescriptor()" data-i18n="wallet_btn_test">test derivation</button>
+            <button class="btn btn-primary btn-sm" onclick="saveWallet()" data-i18n="wallet_btn_save">save</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ADDRESSES -->
+    <div id="page-addresses" class="page">
+      <div class="page-title" data-i18n="page_addresses">// monitored addresses</div>
+      <div class="filters">
+        <select id="f-wallet" onchange="renderAddresses()"><option value="" data-i18n="addr_filter_all_wallets">all wallets</option></select>
+        <select id="f-chain" onchange="renderAddresses()">
+          <option value="" data-i18n="addr_filter_ext_chg">ext + change</option>
+          <option value="0" data-i18n="addr_filter_ext">external only</option>
+          <option value="1" data-i18n="addr_filter_chg">change only</option>
+        </select>
+        <select id="f-bal" onchange="renderAddresses()">
+          <option value="" data-i18n="addr_filter_all">all</option>
+          <option value="1" data-i18n="addr_filter_with_bal">with balance</option>
+          <option value="0" data-i18n="addr_filter_no_bal">without balance</option>
+        </select>
+      </div>
+      <div class="card" style="padding:0;overflow:hidden">
+        <table class="addr-table">
+          <colgroup><col/><col/><col/><col/><col/><col/></colgroup>
+          <thead><tr>
+            <th data-i18n="addr_col_num">#</th><th data-i18n="addr_col_type">type</th><th data-i18n="addr_col_wallet">wallet</th><th data-i18n="addr_col_address">address</th>
+            <th style="text-align:right" data-i18n="addr_col_balance">balance (BTC)</th><th style="text-align:right" data-i18n="addr_col_txs">txs</th>
+          </tr></thead>
+          <tbody id="addr-tbody"></tbody>
+        </table>
+        <div class="addr-cards" id="addr-cards"></div>
+      </div>
+    </div>
+
+    <!-- SETTINGS -->
+    <div id="page-settings" class="page">
+      <div class="page-title" data-i18n="page_settings">// settings</div>
+
+      <div class="card">
+        <div class="card-label">servidor electrum</div>
+        <div id="server-list"></div>
+        <div class="divider"></div>
+        <div style="display:flex;justify-content:space-between;align-items:center;cursor:pointer" onclick="toggleAddServer()">
+          <div style="font-size:12px;color:var(--text2);font-family:var(--mono)" data-i18n="settings_custom_server">+ custom server</div>
+          <svg id="srv-chevron" style="width:14px;height:14px;color:var(--text3);transition:transform .2s" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 6l4 4 4-4"/></svg>
+        </div>
+        <div id="add-server-form" class="add-form">
+          <div style="height:14px"></div>
+          <div class="field"><label data-i18n="settings_server_name">name</label><input id="s-name" placeholder="Electrum Server" autocomplete="off"/></div>
+          <div class="field-row3">
+            <div class="field"><label data-i18n="settings_server_host">host</label><input id="s-host" placeholder="192.168.x.x" autocomplete="off"/></div>
+            <div class="field"><label data-i18n="settings_server_port">port</label><input id="s-port" type="number" placeholder="50002" autocomplete="off"/></div>
+            <div class="field"><label data-i18n="settings_server_tls">TLS</label>
+              <select id="s-tls"><option value="true" data-i18n="settings_server_tls_yes">yes</option><option value="false" data-i18n="settings_server_tls_no">no</option></select>
+            </div>
+          </div>
+          <div class="btn-row">
+            <button class="btn btn-sm" onclick="testServer()" data-i18n="settings_server_btn_test">test connection</button>
+            <button class="btn btn-primary btn-sm" onclick="saveServer()" data-i18n="settings_server_btn_save">save</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-label" data-i18n="settings_telegram">telegram settings</div>
+        <div class="field" style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
+          <label class="notif-toggle">
+            <input type="checkbox" id="tg-enabled" onchange="markSettingsDirty()">
+            <span class="notif-slider"></span>
+          </label>
+          <span style="font-size:13px;color:var(--text2)" data-i18n="settings_telegram_enable">Enable Telegram notifications</span>
+        </div>
+        <div class="field"><label data-i18n="settings_telegram_token">token</label><input id="tg-token" type="password" placeholder="1234567890:AAH..." oninput="markSettingsDirty()"/></div>
+        <div class="field"><label data-i18n="settings_telegram_chatid">chat ID</label><input id="tg-chatid" placeholder="727926440" oninput="markSettingsDirty()"/></div>
+        <div class="btn-row">
+          <button class="btn btn-sm" onclick="testTelegram()" data-i18n="settings_telegram_test">send test</button>
+          <button class="btn btn-primary btn-sm" onclick="saveTelegram()" data-i18n="settings_telegram_save">save</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-label" data-i18n="settings_ntfy">ntfy settings</div>
+        <div class="field" style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
+          <label class="notif-toggle">
+            <input type="checkbox" id="ntfy-enabled" onchange="markSettingsDirty()">
+            <span class="notif-slider"></span>
+          </label>
+          <span style="font-size:13px;color:var(--text2)" data-i18n="settings_ntfy_enable">Enable ntfy notifications</span>
+        </div>
+        <div class="field"><label data-i18n="settings_ntfy_url">topic URL</label><input id="ntfy-url" placeholder="https://ntfy.sh/meu-topico" oninput="markSettingsDirty()"/></div>
+        <div class="field"><label data-i18n="settings_ntfy_token">token (optional)</label><input id="ntfy-token" type="password" placeholder="tk_..." oninput="markSettingsDirty()"/></div>
+        <div class="btn-row">
+          <button class="btn btn-sm" onclick="testNtfy()" data-i18n="settings_ntfy_test">send test</button>
+          <button class="btn btn-primary btn-sm" onclick="saveNtfy()" data-i18n="settings_ntfy_save">save</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-label" data-i18n="settings_notif_global">global notifications</div>
+        <div style="font-size:12px;color:var(--text3);font-family:var(--mono);margin-bottom:14px" data-i18n="settings_notif_global_desc">Choose which events trigger a notification</div>
+        <style>
+          .notif-row { display:flex; align-items:flex-start; gap:12px; padding:10px 0; border-bottom:1px solid var(--border); }
+          .notif-row:last-child { border-bottom:none; }
+          .notif-toggle { position:relative; width:36px; height:20px; flex-shrink:0; margin-top:1px; }
+          .notif-toggle input { opacity:0; width:0; height:0; position:absolute; }
+          .notif-slider { position:absolute; inset:0; border-radius:20px; background:var(--border2); cursor:pointer; transition:background .2s; }
+          .notif-slider:before { content:''; position:absolute; left:3px; top:3px; width:14px; height:14px; border-radius:50%; background:var(--text3); transition:transform .2s, background .2s; }
+          .notif-toggle input:checked + .notif-slider { background:rgba(240,192,64,0.3); }
+          .notif-toggle input:checked + .notif-slider:before { transform:translateX(16px); background:var(--accent); }
+          .notif-text { flex:1; }
+          .notif-label { font-size:13px; color:var(--text); font-weight:500; }
+          .notif-desc { font-size:12px; color:var(--text3); font-family:var(--mono); margin-top:3px; }
+          .notif-sub { margin-top:10px; display:none; padding:10px 14px; background:var(--surface2); border-radius:5px; border:1px solid var(--border); }
+          .notif-sub.open { display:block; }
+          .notif-sub label { display:block; font-size:12px; color:var(--text2); font-family:var(--mono); margin-bottom:7px; }
+          .notif-sub input[type=number] { padding:6px 10px; background:var(--bg); border:1px solid var(--border); border-radius:4px; color:var(--text); font-family:var(--mono); font-size:12px; width:140px; outline:none; }
+          .notif-sub input[type=number]:focus { border-color:var(--border2); }
+        </style>
+
+        <div class="notif-row">
+          <label class="notif-toggle">
+            <input type="checkbox" id="notif-every-block" onchange="markSettingsDirty(); toggleNotifSub('block-sub', this.checked)">
+            <span class="notif-slider"></span>
+          </label>
+          <div class="notif-text">
+            <div class="notif-label" data-i18n="settings_notif_block">⛏️ Every block mined</div>
+            <div class="notif-desc" data-i18n="settings_notif_block_desc">Sends a message for each new block, even without your txs</div>
+            <div id="block-sub" class="notif-sub">
+              <label data-i18n="settings_notif_block_interval_label">Minimum interval between alerts (minutes)</label>
+              <input type="number" id="notif-block-interval" oninput="markSettingsDirty()" value="0" min="0" max="1440" placeholder="0 = todos"/>
+              <div style="font-size:11px;color:var(--text3);margin-top:6px" data-i18n="settings_notif_block_interval_hint">0 = notify every block</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="notif-row">
+          <label class="notif-toggle">
+            <input type="checkbox" id="notif-price-change" onchange="markSettingsDirty(); toggleNotifSub('price-sub', this.checked)">
+            <span class="notif-slider"></span>
+          </label>
+          <div class="notif-text">
+            <div class="notif-label" id="notif-price-change-label" data-i18n="settings_notif_price_placeholder">📊 Price change (BTC/USD)</div>
+            <div class="notif-desc" data-i18n="settings_notif_price_desc">Alert when price changes beyond the defined threshold</div>
+            <div id="price-sub" class="notif-sub">
+              <label data-i18n="settings_notif_price_threshold_label">Change threshold (%)</label>
+              <input type="number" id="notif-price-threshold" value="1" min="0.01" max="50" step="0.1" placeholder="ex: 1" oninput="markSettingsDirty(); validatePriceThreshold()"/>
+              <div id="notif-threshold-warn" style="font-size:11px;color:var(--red);margin-top:4px;display:none"></div>
+              <div id="notif-threshold-hint" style="font-size:11px;color:var(--text3);margin-top:4px">Faixa permitida: 1% a 50%</div>
+              <div id="notif-threshold-value" style="font-size:12px;color:var(--accent);font-family:var(--mono);margin-top:4px;display:none"></div>
+              <div style="height:10px"></div>
+              <label data-i18n="settings_notif_price_ref_label">Reference price <span style="color:var(--text3);font-weight:normal" data-i18n="settings_notif_price_ref_optional">— optional</span></label>
+              <input type="number" id="notif-price-reference" min="1" placeholder="—" oninput="markSettingsDirty(); validatePriceReference(); validatePriceThreshold()"/>
+              <div id="notif-reference-warn" style="font-size:11px;color:var(--red);margin-top:4px;display:none"></div>
+              <div id="notif-reference-hint" style="font-size:11px;color:var(--text3);margin-top:4px" data-i18n="settings_notif_price_ref_hint">Limit: ±20% of current price. Empty = use current price.</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="btn-row">
+          <button class="btn btn-primary btn-sm" onclick="saveNotifPrefs()" data-i18n="settings_notif_save">save preferences</button>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-label" data-i18n="settings_monitor">monitor</div>
+        <div class="field-row">
+          <div class="field">
+            <label data-i18n="settings_gap_label">gap limit</label>
+            <input id="cfg-gap" type="number" value="10" min="1" max="10" oninput="markSettingsDirty(); validateGapLimit()"/>
+            <div style="font-size:11px; margin-top:4px; white-space: nowrap;">
+              <span id="gap-hint" style="color:var(--text3)" data-i18n="settings_gap_hint">Range: 1 to 10</span>
+              <span id="gap-warn" style="color:var(--red); display:none; margin-left:4px" data-i18n="settings_gap_warn">⚠️ Invalid</span>
+            </div>
+          </div>
+          <div class="field">
+            <label data-i18n="settings_max_label">max index</label>
+            <input id="cfg-max" type="number" value="1000" min="1" max="10000" oninput="markSettingsDirty(); validateMaxIndex()"/>
+            <div style="font-size:11px; margin-top:4px; white-space: nowrap;">
+              <span id="max-hint" style="color:var(--text3)" data-i18n="settings_max_hint">Limit: 10,000</span>
+              <span id="max-warn" style="color:var(--red); display:none; margin-left:4px" data-i18n="settings_max_warn">⚠️ Invalid</span>
+            </div>
+          </div>
+        </div>
+        <div class="field"><label data-i18n="settings_mempool_label">mempool explorer (base URL)</label><input id="cfg-mempool" placeholder="https://mempool.space/" oninput="markSettingsDirty()"/></div>
+        <div class="btn-row">
+          <button class="btn btn-primary btn-sm" onclick="saveMonitorCfg()" data-i18n="settings_monitor_save">save</button>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-label" data-i18n="settings_locale">locale &amp; display</div>
+
+        <div class="field">
+          <label data-i18n="settings_language_label" style="font-size:12px;color:var(--text2);font-family:var(--mono)">Interface language</label>
+          <select id="cfg-language" onchange="markSettingsDirty()" style="margin-top:6px;width:100%;padding:9px 12px;background:var(--surface2);border:1px solid var(--border);border-radius:5px;color:var(--text);font-family:var(--mono);font-size:14px;outline:none">
+            <option value="en-US">English (US)</option>
+            <option value="pt-BR">Português (Brasil)</option>
+            <option value="es-ES">Español</option>
+            <option value="de-DE">Deutsch</option>
+          </select>
+        </div>
+
+        <div class="field">
+          <label data-i18n="settings_currency_label" style="font-size:12px;color:var(--text2);font-family:var(--mono)">Currency</label>
+          <select id="cfg-currency" onchange="markSettingsDirty()" style="margin-top:6px;width:100%;padding:9px 12px;background:var(--surface2);border:1px solid var(--border);border-radius:5px;color:var(--text);font-family:var(--mono);font-size:14px;outline:none">
+            <option value="USD">USD — US Dollar</option>
+            <option value="EUR">EUR — Euro</option>
+            <option value="GBP">GBP — British Pound</option>
+            <option value="JPY">JPY — Japanese Yen</option>
+            <option value="BRL">BRL — Real Brasileiro</option>
+            <option value="CHF">CHF — Swiss Franc</option>
+            <option value="CNY">CNY — Chinese Yuan</option>
+            <option value="INR">INR — Indian Rupee</option>
+            <option value="KRW">KRW — South Korean Won</option>
+            <option value="RUB">RUB — Russian Ruble</option>
+            <option value="ARS">ARS — Argentine Peso</option>
+            <option value="ILS">ILS — Israeli Shekel</option>
+            <option value="AED">AED — UAE Dirham</option>
+            <option value="SAR">SAR — Saudi Riyal</option>
+          </select>
+        </div>
+
+        <div class="field">
+          <label data-i18n="settings_timezone_label" style="font-size:12px;color:var(--text2);font-family:var(--mono)">Timezone</label>
+          <select id="cfg-timezone" onchange="markSettingsDirty()" style="margin-top:6px;width:100%;padding:9px 12px;background:var(--surface2);border:1px solid var(--border);border-radius:5px;color:var(--text);font-family:var(--mono);font-size:14px;outline:none">
+            <optgroup label="── UTC-12 ─────────────────────────">
+              <option value="Pacific/Baker_Island">Pacific/Baker_Island — UTC−12:00</option>
+              <option value="Pacific/Howland_Island">Pacific/Howland_Island — UTC−12:00</option>
+          </optgroup>
+            <optgroup label="── UTC-11 ─────────────────────────">
+              <option value="Pacific/Midway">Pacific/Midway — UTC−11:00</option>
+              <option value="Pacific/Niue">Pacific/Niue — UTC−11:00</option>
+              <option value="Pacific/Pago_Pago">Pacific/Pago_Pago — UTC−11:00</option>
+              <option value="Pacific/Samoa">Pacific/Samoa — UTC−11:00</option>
+          </optgroup>
+            <optgroup label="── UTC-10 ─────────────────────────">
+              <option value="America/Adak">America/Adak — UTC−10:00 / UTC−09:00</option>
+              <option value="Pacific/Honolulu">Pacific/Honolulu — UTC−10:00</option>
+              <option value="Pacific/Rarotonga">Pacific/Rarotonga — UTC−10:00</option>
+              <option value="Pacific/Tahiti">Pacific/Tahiti — UTC−10:00</option>
+          </optgroup>
+            <optgroup label="── UTC-9:30 ─────────────────────────">
+              <option value="Pacific/Marquesas">Pacific/Marquesas — UTC−09:30</option>
+          </optgroup>
+            <optgroup label="── UTC-9 ─────────────────────────">
+              <option value="America/Anchorage">America/Anchorage — UTC−09:00 / UTC−08:00</option>
+              <option value="America/Juneau">America/Juneau — UTC−09:00 / UTC−08:00</option>
+              <option value="America/Nome">America/Nome — UTC−09:00 / UTC−08:00</option>
+              <option value="Pacific/Gambier">Pacific/Gambier — UTC−09:00</option>
+          </optgroup>
+            <optgroup label="── UTC-8 ─────────────────────────">
+              <option value="America/Los_Angeles">America/Los_Angeles — UTC−08:00 / UTC−07:00</option>
+              <option value="America/Tijuana">America/Tijuana — UTC−08:00 / UTC−07:00</option>
+              <option value="America/Vancouver">America/Vancouver — UTC−08:00 / UTC−07:00</option>
+              <option value="Pacific/Pitcairn">Pacific/Pitcairn — UTC−08:00</option>
+          </optgroup>
+            <optgroup label="── UTC-7 ─────────────────────────">
+              <option value="America/Denver">America/Denver — UTC−07:00 / UTC−06:00</option>
+              <option value="America/Edmonton">America/Edmonton — UTC−07:00 / UTC−06:00</option>
+              <option value="America/Hermosillo">America/Hermosillo — UTC−07:00</option>
+              <option value="America/Mazatlan">America/Mazatlan — UTC−07:00 / UTC−06:00</option>
+              <option value="America/Phoenix">America/Phoenix — UTC−07:00</option>
+          </optgroup>
+            <optgroup label="── UTC-6 ─────────────────────────">
+              <option value="America/Belize">America/Belize — UTC−06:00</option>
+              <option value="America/Chicago">America/Chicago — UTC−06:00 / UTC−05:00</option>
+              <option value="America/Costa_Rica">America/Costa_Rica — UTC−06:00</option>
+              <option value="America/El_Salvador">America/El_Salvador — UTC−06:00</option>
+              <option value="America/Guatemala">America/Guatemala — UTC−06:00</option>
+              <option value="America/Managua">America/Managua — UTC−06:00</option>
+              <option value="America/Mexico_City">America/Mexico_City — UTC−06:00 / UTC−05:00</option>
+              <option value="America/Regina">America/Regina — UTC−06:00</option>
+              <option value="America/Tegucigalpa">America/Tegucigalpa — UTC−06:00</option>
+              <option value="America/Winnipeg">America/Winnipeg — UTC−06:00 / UTC−05:00</option>
+              <option value="Pacific/Easter">Pacific/Easter — UTC−06:00 / UTC−05:00</option>
+              <option value="Pacific/Galapagos">Pacific/Galapagos — UTC−06:00</option>
+          </optgroup>
+            <optgroup label="── UTC-5 ─────────────────────────">
+              <option value="America/Bogota">America/Bogota — UTC−05:00</option>
+              <option value="America/Cancun">America/Cancun — UTC−05:00</option>
+              <option value="America/Cayman">America/Cayman — UTC−05:00</option>
+              <option value="America/Eirunepe">America/Eirunepe — UTC−05:00</option>
+              <option value="America/Guayaquil">America/Guayaquil — UTC−05:00</option>
+              <option value="America/Havana">America/Havana — UTC−05:00 / UTC−04:00</option>
+              <option value="America/Jamaica">America/Jamaica — UTC−05:00</option>
+              <option value="America/Lima">America/Lima — UTC−05:00</option>
+              <option value="America/New_York">America/New_York — UTC−05:00 / UTC−04:00</option>
+              <option value="America/Panama">America/Panama — UTC−05:00</option>
+              <option value="America/Rio_Branco">America/Rio_Branco — UTC−05:00</option>
+              <option value="America/Toronto">America/Toronto — UTC−05:00 / UTC−04:00</option>
+          </optgroup>
+            <optgroup label="── UTC-4 ─────────────────────────">
+              <option value="America/Anguilla">America/Anguilla — UTC−04:00</option>
+              <option value="America/Antigua">America/Antigua — UTC−04:00</option>
+              <option value="America/Aruba">America/Aruba — UTC−04:00</option>
+              <option value="America/Asuncion">America/Asuncion — UTC−04:00 / UTC−03:00</option>
+              <option value="America/Barbados">America/Barbados — UTC−04:00</option>
+              <option value="America/Blanc-Sablon">America/Blanc-Sablon — UTC−04:00</option>
+              <option value="America/Boa_Vista">America/Boa_Vista — UTC−04:00</option>
+              <option value="America/Campo_Grande">America/Campo_Grande — UTC−04:00 / UTC−03:00</option>
+              <option value="America/Caracas">America/Caracas — UTC−04:00</option>
+              <option value="America/Cuiaba">America/Cuiaba — UTC−04:00 / UTC−03:00</option>
+              <option value="America/Curacao">America/Curacao — UTC−04:00</option>
+              <option value="America/Dominica">America/Dominica — UTC−04:00</option>
+              <option value="America/Grenada">America/Grenada — UTC−04:00</option>
+              <option value="America/Guadeloupe">America/Guadeloupe — UTC−04:00</option>
+              <option value="America/Guyana">America/Guyana — UTC−04:00</option>
+              <option value="America/Halifax">America/Halifax — UTC−04:00 / UTC−03:00</option>
+              <option value="America/La_Paz">America/La_Paz — UTC−04:00</option>
+              <option value="America/Manaus">America/Manaus — UTC−04:00</option>
+              <option value="America/Martinique">America/Martinique — UTC−04:00</option>
+              <option value="America/Montserrat">America/Montserrat — UTC−04:00</option>
+              <option value="America/Port_of_Spain">America/Port_of_Spain — UTC−04:00</option>
+              <option value="America/Porto_Velho">America/Porto_Velho — UTC−04:00</option>
+              <option value="America/Puerto_Rico">America/Puerto_Rico — UTC−04:00</option>
+              <option value="America/Santiago">America/Santiago — UTC−04:00 / UTC−03:00</option>
+              <option value="America/Santo_Domingo">America/Santo_Domingo — UTC−04:00</option>
+              <option value="America/St_Kitts">America/St_Kitts — UTC−04:00</option>
+              <option value="America/St_Lucia">America/St_Lucia — UTC−04:00</option>
+              <option value="America/St_Vincent">America/St_Vincent — UTC−04:00</option>
+              <option value="America/Tortola">America/Tortola — UTC−04:00</option>
+              <option value="Atlantic/Bermuda">Atlantic/Bermuda — UTC−04:00 / UTC−03:00</option>
+          </optgroup>
+            <optgroup label="── UTC-3:30 ─────────────────────────">
+              <option value="America/St_Johns">America/St_Johns — UTC−03:30 / UTC−02:30</option>
+          </optgroup>
+            <optgroup label="── UTC-3 ─────────────────────────">
+              <option value="America/Argentina/Buenos_Aires">America/Argentina/Buenos_Aires — UTC−03:00</option>
+              <option value="America/Argentina/Catamarca">America/Argentina/Catamarca — UTC−03:00</option>
+              <option value="America/Argentina/Cordoba">America/Argentina/Cordoba — UTC−03:00</option>
+              <option value="America/Argentina/Jujuy">America/Argentina/Jujuy — UTC−03:00</option>
+              <option value="America/Argentina/La_Rioja">America/Argentina/La_Rioja — UTC−03:00</option>
+              <option value="America/Argentina/Mendoza">America/Argentina/Mendoza — UTC−03:00</option>
+              <option value="America/Argentina/Rio_Gallegos">America/Argentina/Rio_Gallegos — UTC−03:00</option>
+              <option value="America/Argentina/Salta">America/Argentina/Salta — UTC−03:00</option>
+              <option value="America/Argentina/San_Juan">America/Argentina/San_Juan — UTC−03:00</option>
+              <option value="America/Argentina/Tucuman">America/Argentina/Tucuman — UTC−03:00</option>
+              <option value="America/Argentina/Ushuaia">America/Argentina/Ushuaia — UTC−03:00</option>
+              <option value="America/Bahia">America/Bahia — UTC−03:00</option>
+              <option value="America/Belem">America/Belem — UTC−03:00</option>
+              <option value="America/Cayenne">America/Cayenne — UTC−03:00</option>
+              <option value="America/Fortaleza">America/Fortaleza — UTC−03:00</option>
+              <option value="America/Maceio">America/Maceio — UTC−03:00</option>
+              <option value="America/Montevideo">America/Montevideo — UTC−03:00</option>
+              <option value="America/Paramaribo">America/Paramaribo — UTC−03:00</option>
+              <option value="America/Recife">America/Recife — UTC−03:00</option>
+              <option value="America/Santarem">America/Santarem — UTC−03:00</option>
+              <option value="America/Sao_Paulo">America/Sao_Paulo — UTC−03:00</option>
+              <option value="Atlantic/Stanley">Atlantic/Stanley — UTC−03:00</option>
+          </optgroup>
+            <optgroup label="── UTC-2 ─────────────────────────">
+              <option value="America/Noronha">America/Noronha — UTC−02:00</option>
+              <option value="Atlantic/South_Georgia">Atlantic/South_Georgia — UTC−02:00</option>
+          </optgroup>
+            <optgroup label="── UTC-1 ─────────────────────────">
+              <option value="America/Scoresbysund">America/Scoresbysund — UTC−01:00 / UTC+00:00</option>
+              <option value="Atlantic/Azores">Atlantic/Azores — UTC−01:00 / UTC+00:00</option>
+              <option value="Atlantic/Cape_Verde">Atlantic/Cape_Verde — UTC−01:00</option>
+          </optgroup>
+            <optgroup label="── UTC+0 ─────────────────────────">
+              <option value="Africa/Abidjan">Africa/Abidjan — UTC+00:00</option>
+              <option value="Africa/Accra">Africa/Accra — UTC+00:00</option>
+              <option value="Africa/Bissau">Africa/Bissau — UTC+00:00</option>
+              <option value="Africa/Monrovia">Africa/Monrovia — UTC+00:00</option>
+              <option value="Africa/Nouakchott">Africa/Nouakchott — UTC+00:00</option>
+              <option value="America/Danmarkshavn">America/Danmarkshavn — UTC+00:00</option>
+              <option value="Atlantic/Canary">Atlantic/Canary — UTC+00:00 / UTC+01:00</option>
+              <option value="Atlantic/Faroe">Atlantic/Faroe — UTC+00:00 / UTC+01:00</option>
+              <option value="Atlantic/Reykjavik">Atlantic/Reykjavik — UTC+00:00</option>
+              <option value="Atlantic/St_Helena">Atlantic/St_Helena — UTC+00:00</option>
+              <option value="Europe/Dublin">Europe/Dublin — UTC+00:00 / UTC+01:00</option>
+              <option value="Europe/Lisbon">Europe/Lisbon — UTC+00:00 / UTC+01:00</option>
+              <option value="Europe/London">Europe/London — UTC+00:00 / UTC+01:00</option>
+              <option value="UTC">UTC — UTC+00:00</option>
+          </optgroup>
+            <optgroup label="── UTC+1 ─────────────────────────">
+              <option value="Africa/Algiers">Africa/Algiers — UTC+01:00</option>
+              <option value="Africa/Bangui">Africa/Bangui — UTC+01:00</option>
+              <option value="Africa/Douala">Africa/Douala — UTC+01:00</option>
+              <option value="Africa/Lagos">Africa/Lagos — UTC+01:00</option>
+              <option value="Africa/Libreville">Africa/Libreville — UTC+01:00</option>
+              <option value="Africa/Luanda">Africa/Luanda — UTC+01:00</option>
+              <option value="Africa/Malabo">Africa/Malabo — UTC+01:00</option>
+              <option value="Africa/Ndjamena">Africa/Ndjamena — UTC+01:00</option>
+              <option value="Africa/Niamey">Africa/Niamey — UTC+01:00</option>
+              <option value="Africa/Porto-Novo">Africa/Porto-Novo — UTC+01:00</option>
+              <option value="Africa/Tunis">Africa/Tunis — UTC+01:00</option>
+              <option value="Europe/Amsterdam">Europe/Amsterdam — UTC+01:00 / UTC+02:00</option>
+              <option value="Europe/Andorra">Europe/Andorra — UTC+01:00 / UTC+02:00</option>
+              <option value="Europe/Belgrade">Europe/Belgrade — UTC+01:00 / UTC+02:00</option>
+              <option value="Europe/Berlin">Europe/Berlin — UTC+01:00 / UTC+02:00</option>
+              <option value="Europe/Brussels">Europe/Brussels — UTC+01:00 / UTC+02:00</option>
+              <option value="Europe/Budapest">Europe/Budapest — UTC+01:00 / UTC+02:00</option>
+              <option value="Europe/Copenhagen">Europe/Copenhagen — UTC+01:00 / UTC+02:00</option>
+              <option value="Europe/Gibraltar">Europe/Gibraltar — UTC+01:00 / UTC+02:00</option>
+              <option value="Europe/Luxembourg">Europe/Luxembourg — UTC+01:00 / UTC+02:00</option>
+              <option value="Europe/Madrid">Europe/Madrid — UTC+01:00 / UTC+02:00</option>
+              <option value="Europe/Malta">Europe/Malta — UTC+01:00 / UTC+02:00</option>
+              <option value="Europe/Monaco">Europe/Monaco — UTC+01:00 / UTC+02:00</option>
+              <option value="Europe/Oslo">Europe/Oslo — UTC+01:00 / UTC+02:00</option>
+              <option value="Europe/Paris">Europe/Paris — UTC+01:00 / UTC+02:00</option>
+              <option value="Europe/Prague">Europe/Prague — UTC+01:00 / UTC+02:00</option>
+              <option value="Europe/Rome">Europe/Rome — UTC+01:00 / UTC+02:00</option>
+              <option value="Europe/Stockholm">Europe/Stockholm — UTC+01:00 / UTC+02:00</option>
+              <option value="Europe/Tirane">Europe/Tirane — UTC+01:00 / UTC+02:00</option>
+              <option value="Europe/Vienna">Europe/Vienna — UTC+01:00 / UTC+02:00</option>
+              <option value="Europe/Warsaw">Europe/Warsaw — UTC+01:00 / UTC+02:00</option>
+              <option value="Europe/Zurich">Europe/Zurich — UTC+01:00 / UTC+02:00</option>
+          </optgroup>
+            <optgroup label="── UTC+2 ─────────────────────────">
+              <option value="Africa/Blantyre">Africa/Blantyre — UTC+02:00</option>
+              <option value="Africa/Bujumbura">Africa/Bujumbura — UTC+02:00</option>
+              <option value="Africa/Cairo">Africa/Cairo — UTC+02:00</option>
+              <option value="Africa/Gaborone">Africa/Gaborone — UTC+02:00</option>
+              <option value="Africa/Harare">Africa/Harare — UTC+02:00</option>
+              <option value="Africa/Johannesburg">Africa/Johannesburg — UTC+02:00</option>
+              <option value="Africa/Kigali">Africa/Kigali — UTC+02:00</option>
+              <option value="Africa/Lubumbashi">Africa/Lubumbashi — UTC+02:00</option>
+              <option value="Africa/Lusaka">Africa/Lusaka — UTC+02:00</option>
+              <option value="Africa/Maputo">Africa/Maputo — UTC+02:00</option>
+              <option value="Africa/Maseru">Africa/Maseru — UTC+02:00</option>
+              <option value="Africa/Mbabane">Africa/Mbabane — UTC+02:00</option>
+              <option value="Africa/Tripoli">Africa/Tripoli — UTC+02:00</option>
+              <option value="Africa/Windhoek">Africa/Windhoek — UTC+02:00 / UTC+01:00</option>
+              <option value="Asia/Beirut">Asia/Beirut — UTC+02:00 / UTC+03:00</option>
+              <option value="Asia/Damascus">Asia/Damascus — UTC+02:00 / UTC+03:00</option>
+              <option value="Asia/Famagusta">Asia/Famagusta — UTC+02:00 / UTC+03:00</option>
+              <option value="Asia/Gaza">Asia/Gaza — UTC+02:00 / UTC+03:00</option>
+              <option value="Asia/Jerusalem">Asia/Jerusalem — UTC+02:00 / UTC+03:00</option>
+              <option value="Asia/Nicosia">Asia/Nicosia — UTC+02:00 / UTC+03:00</option>
+              <option value="Europe/Athens">Europe/Athens — UTC+02:00 / UTC+03:00</option>
+              <option value="Europe/Bucharest">Europe/Bucharest — UTC+02:00 / UTC+03:00</option>
+              <option value="Europe/Chisinau">Europe/Chisinau — UTC+02:00 / UTC+03:00</option>
+              <option value="Europe/Helsinki">Europe/Helsinki — UTC+02:00 / UTC+03:00</option>
+              <option value="Europe/Kaliningrad">Europe/Kaliningrad — UTC+02:00</option>
+              <option value="Europe/Kiev">Europe/Kiev — UTC+02:00 / UTC+03:00</option>
+              <option value="Europe/Riga">Europe/Riga — UTC+02:00 / UTC+03:00</option>
+              <option value="Europe/Sofia">Europe/Sofia — UTC+02:00 / UTC+03:00</option>
+              <option value="Europe/Tallinn">Europe/Tallinn — UTC+02:00 / UTC+03:00</option>
+              <option value="Europe/Uzhgorod">Europe/Uzhgorod — UTC+02:00 / UTC+03:00</option>
+              <option value="Europe/Vilnius">Europe/Vilnius — UTC+02:00 / UTC+03:00</option>
+              <option value="Europe/Zaporozhye">Europe/Zaporozhye — UTC+02:00 / UTC+03:00</option>
+          </optgroup>
+            <optgroup label="── UTC+3 ─────────────────────────">
+              <option value="Africa/Addis_Ababa">Africa/Addis_Ababa — UTC+03:00</option>
+              <option value="Africa/Asmara">Africa/Asmara — UTC+03:00</option>
+              <option value="Africa/Dar_es_Salaam">Africa/Dar_es_Salaam — UTC+03:00</option>
+              <option value="Africa/Djibouti">Africa/Djibouti — UTC+03:00</option>
+              <option value="Africa/Kampala">Africa/Kampala — UTC+03:00</option>
+              <option value="Africa/Mogadishu">Africa/Mogadishu — UTC+03:00</option>
+              <option value="Africa/Nairobi">Africa/Nairobi — UTC+03:00</option>
+              <option value="Asia/Aden">Asia/Aden — UTC+03:00</option>
+              <option value="Asia/Amman">Asia/Amman — UTC+03:00 / UTC+02:00</option>
+              <option value="Asia/Baghdad">Asia/Baghdad — UTC+03:00</option>
+              <option value="Asia/Bahrain">Asia/Bahrain — UTC+03:00</option>
+              <option value="Asia/Kuwait">Asia/Kuwait — UTC+03:00</option>
+              <option value="Asia/Qatar">Asia/Qatar — UTC+03:00</option>
+              <option value="Asia/Riyadh">Asia/Riyadh — UTC+03:00</option>
+              <option value="Europe/Istanbul">Europe/Istanbul — UTC+03:00</option>
+              <option value="Europe/Minsk">Europe/Minsk — UTC+03:00</option>
+              <option value="Europe/Moscow">Europe/Moscow — UTC+03:00</option>
+              <option value="Europe/Simferopol">Europe/Simferopol — UTC+03:00</option>
+              <option value="Indian/Antananarivo">Indian/Antananarivo — UTC+03:00</option>
+              <option value="Indian/Comoro">Indian/Comoro — UTC+03:00</option>
+              <option value="Indian/Mayotte">Indian/Mayotte — UTC+03:00</option>
+          </optgroup>
+            <optgroup label="── UTC+3:30 ─────────────────────────">
+              <option value="Asia/Tehran">Asia/Tehran — UTC+03:30 / UTC+04:30</option>
+          </optgroup>
+            <optgroup label="── UTC+4 ─────────────────────────">
+              <option value="Asia/Baku">Asia/Baku — UTC+04:00</option>
+              <option value="Asia/Dubai">Asia/Dubai — UTC+04:00</option>
+              <option value="Asia/Muscat">Asia/Muscat — UTC+04:00</option>
+              <option value="Asia/Tbilisi">Asia/Tbilisi — UTC+04:00</option>
+              <option value="Asia/Yerevan">Asia/Yerevan — UTC+04:00</option>
+              <option value="Europe/Astrakhan">Europe/Astrakhan — UTC+04:00</option>
+              <option value="Europe/Samara">Europe/Samara — UTC+04:00</option>
+              <option value="Europe/Saratov">Europe/Saratov — UTC+04:00</option>
+              <option value="Europe/Ulyanovsk">Europe/Ulyanovsk — UTC+04:00</option>
+              <option value="Europe/Volgograd">Europe/Volgograd — UTC+04:00</option>
+              <option value="Indian/Mahe">Indian/Mahe — UTC+04:00</option>
+              <option value="Indian/Mauritius">Indian/Mauritius — UTC+04:00</option>
+              <option value="Indian/Reunion">Indian/Reunion — UTC+04:00</option>
+          </optgroup>
+            <optgroup label="── UTC+4:30 ─────────────────────────">
+              <option value="Asia/Kabul">Asia/Kabul — UTC+04:30</option>
+          </optgroup>
+            <optgroup label="── UTC+5 ─────────────────────────">
+              <option value="Asia/Almaty">Asia/Almaty — UTC+05:00</option>
+              <option value="Asia/Aqtau">Asia/Aqtau — UTC+05:00</option>
+              <option value="Asia/Aqtobe">Asia/Aqtobe — UTC+05:00</option>
+              <option value="Asia/Ashgabat">Asia/Ashgabat — UTC+05:00</option>
+              <option value="Asia/Atyrau">Asia/Atyrau — UTC+05:00</option>
+              <option value="Asia/Dushanbe">Asia/Dushanbe — UTC+05:00</option>
+              <option value="Asia/Karachi">Asia/Karachi — UTC+05:00</option>
+              <option value="Asia/Oral">Asia/Oral — UTC+05:00</option>
+              <option value="Asia/Qyzylorda">Asia/Qyzylorda — UTC+05:00</option>
+              <option value="Asia/Samarkand">Asia/Samarkand — UTC+05:00</option>
+              <option value="Asia/Tashkent">Asia/Tashkent — UTC+05:00</option>
+              <option value="Asia/Yekaterinburg">Asia/Yekaterinburg — UTC+05:00</option>
+              <option value="Indian/Kerguelen">Indian/Kerguelen — UTC+05:00</option>
+              <option value="Indian/Maldives">Indian/Maldives — UTC+05:00</option>
+          </optgroup>
+            <optgroup label="── UTC+5:30 ─────────────────────────">
+              <option value="Asia/Colombo">Asia/Colombo — UTC+05:30</option>
+              <option value="Asia/Kolkata">Asia/Kolkata — UTC+05:30</option>
+          </optgroup>
+            <optgroup label="── UTC+5:45 ─────────────────────────">
+              <option value="Asia/Kathmandu">Asia/Kathmandu — UTC+05:45</option>
+          </optgroup>
+            <optgroup label="── UTC+6 ─────────────────────────">
+              <option value="Asia/Bishkek">Asia/Bishkek — UTC+06:00</option>
+              <option value="Asia/Dhaka">Asia/Dhaka — UTC+06:00</option>
+              <option value="Asia/Omsk">Asia/Omsk — UTC+06:00</option>
+              <option value="Asia/Thimphu">Asia/Thimphu — UTC+06:00</option>
+              <option value="Asia/Urumqi">Asia/Urumqi — UTC+06:00</option>
+              <option value="Indian/Chagos">Indian/Chagos — UTC+06:00</option>
+          </optgroup>
+            <optgroup label="── UTC+6:30 ─────────────────────────">
+              <option value="Asia/Rangoon">Asia/Rangoon — UTC+06:30</option>
+              <option value="Indian/Cocos">Indian/Cocos — UTC+06:30</option>
+          </optgroup>
+            <optgroup label="── UTC+7 ─────────────────────────">
+              <option value="Asia/Bangkok">Asia/Bangkok — UTC+07:00</option>
+              <option value="Asia/Barnaul">Asia/Barnaul — UTC+07:00</option>
+              <option value="Asia/Ho_Chi_Minh">Asia/Ho_Chi_Minh — UTC+07:00</option>
+              <option value="Asia/Hovd">Asia/Hovd — UTC+07:00</option>
+              <option value="Asia/Jakarta">Asia/Jakarta — UTC+07:00</option>
+              <option value="Asia/Krasnoyarsk">Asia/Krasnoyarsk — UTC+07:00</option>
+              <option value="Asia/Novokuznetsk">Asia/Novokuznetsk — UTC+07:00</option>
+              <option value="Asia/Novosibirsk">Asia/Novosibirsk — UTC+07:00</option>
+              <option value="Asia/Phnom_Penh">Asia/Phnom_Penh — UTC+07:00</option>
+              <option value="Asia/Pontianak">Asia/Pontianak — UTC+07:00</option>
+              <option value="Asia/Tomsk">Asia/Tomsk — UTC+07:00</option>
+              <option value="Asia/Vientiane">Asia/Vientiane — UTC+07:00</option>
+              <option value="Indian/Christmas">Indian/Christmas — UTC+07:00</option>
+          </optgroup>
+            <optgroup label="── UTC+8 ─────────────────────────">
+              <option value="Asia/Brunei">Asia/Brunei — UTC+08:00</option>
+              <option value="Asia/Choibalsan">Asia/Choibalsan — UTC+08:00</option>
+              <option value="Asia/Hong_Kong">Asia/Hong_Kong — UTC+08:00</option>
+              <option value="Asia/Irkutsk">Asia/Irkutsk — UTC+08:00</option>
+              <option value="Asia/Kuala_Lumpur">Asia/Kuala_Lumpur — UTC+08:00</option>
+              <option value="Asia/Kuching">Asia/Kuching — UTC+08:00</option>
+              <option value="Asia/Macau">Asia/Macau — UTC+08:00</option>
+              <option value="Asia/Makassar">Asia/Makassar — UTC+08:00</option>
+              <option value="Asia/Manila">Asia/Manila — UTC+08:00</option>
+              <option value="Asia/Shanghai">Asia/Shanghai — UTC+08:00</option>
+              <option value="Asia/Singapore">Asia/Singapore — UTC+08:00</option>
+              <option value="Asia/Taipei">Asia/Taipei — UTC+08:00</option>
+              <option value="Asia/Ulaanbaatar">Asia/Ulaanbaatar — UTC+08:00</option>
+              <option value="Australia/Perth">Australia/Perth — UTC+08:00</option>
+              <option value="Indian/Cocos">Indian/Cocos — UTC+08:00</option>
+          </optgroup>
+            <optgroup label="── UTC+8:45 ─────────────────────────">
+              <option value="Australia/Eucla">Australia/Eucla — UTC+08:45</option>
+          </optgroup>
+            <optgroup label="── UTC+9 ─────────────────────────">
+              <option value="Asia/Chita">Asia/Chita — UTC+09:00</option>
+              <option value="Asia/Dili">Asia/Dili — UTC+09:00</option>
+              <option value="Asia/Jayapura">Asia/Jayapura — UTC+09:00</option>
+              <option value="Asia/Khandyga">Asia/Khandyga — UTC+09:00</option>
+              <option value="Asia/Pyongyang">Asia/Pyongyang — UTC+09:00</option>
+              <option value="Asia/Seoul">Asia/Seoul — UTC+09:00</option>
+              <option value="Asia/Tokyo">Asia/Tokyo — UTC+09:00</option>
+              <option value="Asia/Yakutsk">Asia/Yakutsk — UTC+09:00</option>
+              <option value="Pacific/Palau">Pacific/Palau — UTC+09:00</option>
+          </optgroup>
+            <optgroup label="── UTC+9:30 ─────────────────────────">
+              <option value="Australia/Adelaide">Australia/Adelaide — UTC+09:30 / UTC+10:30</option>
+              <option value="Australia/Broken_Hill">Australia/Broken_Hill — UTC+09:30 / UTC+10:30</option>
+              <option value="Australia/Darwin">Australia/Darwin — UTC+09:30</option>
+          </optgroup>
+            <optgroup label="── UTC+10 ─────────────────────────">
+              <option value="Asia/Ust-Nera">Asia/Ust-Nera — UTC+10:00</option>
+              <option value="Asia/Vladivostok">Asia/Vladivostok — UTC+10:00</option>
+              <option value="Australia/Brisbane">Australia/Brisbane — UTC+10:00</option>
+              <option value="Australia/Currie">Australia/Currie — UTC+10:00 / UTC+11:00</option>
+              <option value="Australia/Hobart">Australia/Hobart — UTC+10:00 / UTC+11:00</option>
+              <option value="Australia/Lindeman">Australia/Lindeman — UTC+10:00</option>
+              <option value="Australia/Melbourne">Australia/Melbourne — UTC+10:00 / UTC+11:00</option>
+              <option value="Australia/Sydney">Australia/Sydney — UTC+10:00 / UTC+11:00</option>
+              <option value="Pacific/Chuuk">Pacific/Chuuk — UTC+10:00</option>
+              <option value="Pacific/Guam">Pacific/Guam — UTC+10:00</option>
+              <option value="Pacific/Port_Moresby">Pacific/Port_Moresby — UTC+10:00</option>
+              <option value="Pacific/Saipan">Pacific/Saipan — UTC+10:00</option>
+          </optgroup>
+            <optgroup label="── UTC+10:30 ─────────────────────────">
+              <option value="Australia/Lord_Howe">Australia/Lord_Howe — UTC+10:30 / UTC+11:00</option>
+          </optgroup>
+            <optgroup label="── UTC+11 ─────────────────────────">
+              <option value="Asia/Magadan">Asia/Magadan — UTC+11:00</option>
+              <option value="Asia/Sakhalin">Asia/Sakhalin — UTC+11:00</option>
+              <option value="Asia/Srednekolymsk">Asia/Srednekolymsk — UTC+11:00</option>
+              <option value="Pacific/Bougainville">Pacific/Bougainville — UTC+11:00</option>
+              <option value="Pacific/Efate">Pacific/Efate — UTC+11:00</option>
+              <option value="Pacific/Guadalcanal">Pacific/Guadalcanal — UTC+11:00</option>
+              <option value="Pacific/Kosrae">Pacific/Kosrae — UTC+11:00</option>
+              <option value="Pacific/Norfolk">Pacific/Norfolk — UTC+11:00 / UTC+12:00</option>
+              <option value="Pacific/Noumea">Pacific/Noumea — UTC+11:00</option>
+              <option value="Pacific/Pohnpei">Pacific/Pohnpei — UTC+11:00</option>
+          </optgroup>
+            <optgroup label="── UTC+12 ─────────────────────────">
+              <option value="Asia/Anadyr">Asia/Anadyr — UTC+12:00</option>
+              <option value="Asia/Kamchatka">Asia/Kamchatka — UTC+12:00</option>
+              <option value="Pacific/Auckland">Pacific/Auckland — UTC+12:00 / UTC+13:00</option>
+              <option value="Pacific/Chatham">Pacific/Chatham — UTC+12:45 / UTC+13:45</option>
+              <option value="Pacific/Fiji">Pacific/Fiji — UTC+12:00 / UTC+13:00</option>
+              <option value="Pacific/Funafuti">Pacific/Funafuti — UTC+12:00</option>
+              <option value="Pacific/Kwajalein">Pacific/Kwajalein — UTC+12:00</option>
+              <option value="Pacific/Majuro">Pacific/Majuro — UTC+12:00</option>
+              <option value="Pacific/Nauru">Pacific/Nauru — UTC+12:00</option>
+              <option value="Pacific/Tarawa">Pacific/Tarawa — UTC+12:00</option>
+              <option value="Pacific/Wake">Pacific/Wake — UTC+12:00</option>
+              <option value="Pacific/Wallis">Pacific/Wallis — UTC+12:00</option>
+          </optgroup>
+            <optgroup label="── UTC+13 ─────────────────────────">
+              <option value="Pacific/Apia">Pacific/Apia — UTC+13:00</option>
+              <option value="Pacific/Fakaofo">Pacific/Fakaofo — UTC+13:00</option>
+              <option value="Pacific/Tongatapu">Pacific/Tongatapu — UTC+13:00</option>
+          </optgroup>
+            <optgroup label="── UTC+14 ─────────────────────────">
+              <option value="Pacific/Kiritimati">Pacific/Kiritimati — UTC+14:00</option>
+          </optgroup>
+          </select>
+        </div>
+
+        <div class="field">
+          <label data-i18n="settings_datelocale_label" style="font-size:12px;color:var(--text2);font-family:var(--mono)">Date locale</label>
+          <select id="cfg-datelocale" onchange="markSettingsDirty()" style="margin-top:6px;width:100%;padding:9px 12px;background:var(--surface2);border:1px solid var(--border);border-radius:5px;color:var(--text);font-family:var(--mono);font-size:14px;outline:none">
+            <option value="en-US">en-US — 4/19/2026, 3:30 PM</option>
+            <option value="en-GB">en-GB — 19/04/2026, 15:30</option>
+            <option value="pt-BR">pt-BR — 19/04/2026 15:30</option>
+            <option value="de-DE">de-DE — 19.4.2026, 15:30</option>
+            <option value="ja-JP">ja-JP — 2026/4/19 15:30</option>
+          </select>
+        </div>
+
+        <div class="btn-row">
+          <button class="btn btn-primary btn-sm" onclick="saveLocaleCfg()" data-i18n="settings_locale_save">save</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-label" data-i18n="settings_password">panel password</div>
+        <div class="field"><label data-i18n="settings_pw_current">current password</label><input id="pw-current" type="password" placeholder="••••••••"/></div>
+        <div class="field"><label data-i18n="settings_pw_new">new password</label><input id="pw-new" type="password" placeholder="••••••••"/></div>
+        <div class="field"><label data-i18n="settings_pw_confirm">confirm</label><input id="pw-confirm" type="password" placeholder="••••••••"/></div>
+        <div class="btn-row">
+          <button class="btn btn-primary btn-sm" onclick="changePassword()" data-i18n="settings_pw_save">change password</button>
+        </div>
+      </div>
+    </div>
+
+  </main>
+</div>
+</div>
+
+<div id="loading-overlay" class="loading-overlay hidden">
+  <div class="loading-spinner"></div>
+  <div class="loading-msg" id="loading-msg" data-i18n="loading_default">please wait...</div>
+</div>
+<div class="toast" id="toast"></div>
+
+<!-- Custom confirm modal (replaces window.confirm — blocked on mobile) -->
+<div id="confirm-modal" style="display:none;position:fixed;inset:0;z-index:600;background:rgba(0,0,0,0.7);backdrop-filter:blur(2px);align-items:center;justify-content:center">
+  <div style="background:var(--surface2);border:1px solid var(--border2);border-radius:8px;padding:24px;max-width:320px;width:90%;font-family:var(--mono)">
+    <div id="confirm-msg" style="color:var(--text);font-size:14px;margin-bottom:20px;line-height:1.5"></div>
+    <div style="display:flex;gap:10px;justify-content:flex-end">
+      <button onclick="confirmResolve(false)" style="padding:8px 18px;border-radius:5px;border:1px solid var(--border2);background:none;color:var(--text2);font-family:var(--mono);font-size:13px;cursor:pointer" data-i18n="confirm_cancel">cancel</button>
+      <button onclick="confirmResolve(true)" style="padding:8px 18px;border-radius:5px;border:none;background:var(--red);color:#fff;font-family:var(--mono);font-size:13px;cursor:pointer;font-weight:500" data-i18n="confirm_remove">remove</button>
+    </div>
+  </div>
+</div>
+<script>
+const API = '';
+let cfg = {}, servers = [], wallets = [], state = {};
+let priceHistory = [], txHistory = {}, feeData = null;
+
+// ─── THEME ────────────────────────────────────────────────────────────────────
+// Persists preference in localStorage. Applies immediately on load.
+function applyTheme(theme) {
+  document.documentElement.classList.toggle('light', theme === 'light');
+  const btn = document.getElementById('theme-toggle');
+  if (btn) btn.textContent = theme === 'light' ? '🌙' : '☀️';
+}
+
+function toggleTheme() {
+  const isLight = document.documentElement.classList.contains('light');
+  const next = isLight ? 'dark' : 'light';
+  localStorage.setItem('bittrack-theme', next);
+  applyTheme(next);
+}
+
+// Apply saved theme before first render to avoid flash
+applyTheme(localStorage.getItem('bittrack-theme') || 'dark');
+
+// ─── I18N ENGINE ─────────────────────────────────────────────────────────────
+// _t holds the panel strings for the active locale.
+// p(key, vars) is the translation helper used everywhere in this file.
+let _i18nAll = {};
+let _t = {};
+
+// Fetches the language file for the given locale code and populates _t.
+// If lang is not provided, calls /api/i18n without a suffix — the server
+// reads general.language from config.json, so the correct locale is returned
+// even before cfg is populated on the client (e.g. at the login screen).
+async function loadI18n(lang) {
+  const url = lang ? `${API}/api/i18n/${lang}` : `${API}/api/i18n`;
+  try {
+    _i18nAll = await fetch(url).then(r => r.json());
+  } catch { _i18nAll = {}; }
+  // Each language file IS the locale object directly (no top-level lang key)
+  _t = _i18nAll.panel || {};
+  applyLocale();
+}
+
+function applyLocale() {
+  // Apply to all elements with data-i18n attribute
+  document.querySelectorAll('[data-i18n]').forEach(el => {
+    const key = el.getAttribute('data-i18n');
+    const str = _t[key];
+    if (str !== undefined) el.textContent = str;
+  });
+  // Update login-error default text (no data-i18n — controlled by JS to allow dynamic messages)
+  const loginErr = document.getElementById('login-error');
+  if (loginErr && loginErr.style.display === 'none') loginErr.textContent = p('login_error');
+  // Update dynamic placeholders that depend on locale + config
+  const cur = cfg.general?.currency || 'USD';
+  const priceNotifEl = document.getElementById('notif-price-change-label');
+  if (priceNotifEl) priceNotifEl.textContent = p('settings_notif_price', { currency: cur });
+}
+
+// Translation helper — interpolates {var} placeholders.
+// Falls back to the raw key so missing strings are visible during development.
+function p(key, vars = {}) {
+  let str = _t[key] ?? key;
+  for (const [k, v] of Object.entries(vars)) {
+    str = str.replaceAll(`{${k}}`, v ?? '');
+  }
+  return str;
+}
+
+// ── Confirm modal (replaces window.confirm — blocked on mobile) ──
+let _confirmResolve = null;
+function confirmModal(msg) {
+  return new Promise(resolve => {
+    _confirmResolve = resolve;
+    document.getElementById('confirm-msg').textContent = msg;
+    const modal = document.getElementById('confirm-modal');
+    modal.style.display = 'flex';
+  });
+}
+function confirmResolve(result) {
+  document.getElementById('confirm-modal').style.display = 'none';
+  if(_confirmResolve) { _confirmResolve(result); _confirmResolve = null; }
+}
+
+function doLogin() {
+  const pw = document.getElementById('login-pw').value;
+  fetch(`${API}/api/auth/login`, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({password:pw}) })
+    .then(r=>r.json()).then(d=>{
+      console.log('[doLogin] response:', JSON.stringify(d));
+      if(d.ok){
+        sessionStorage.setItem('bw_token',d.token);
+        document.getElementById('login-screen').style.display='none';
+        document.getElementById('app').style.display='block';
+        _bootApp();
+      } else {
+        const err=document.getElementById('login-error');
+        const msg = d.error || p('login_error');
+        console.log('[doLogin] showing error:', msg);
+        err.textContent = msg;
+        err.style.display='block';
+        document.getElementById('login-pw').value='';
+        const delay = d.error ? 8000 : 3000;
+        setTimeout(()=>{ err.style.display='none'; err.textContent=p('login_error'); }, delay);
+      }
+    }).catch(()=>toast(p('toast_load_error',{error:'connection error'}),'err'));
+}
+
+// Common initialization after login (manual or auto).
+// Order: fetch config → reload i18n with correct language → start polling → load data.
+async function _bootApp(){
+  // 1. Fetch config first so we know the language
+  try {
+    const c = await fetch(`${API}/api/config`, {
+      headers: { 'X-Auth-Token': getToken() }
+    }).then(r => r.json());
+    if (c && typeof c === 'object' && !Array.isArray(c)) cfg = c;
+  } catch {}
+
+  // 2. Reload i18n now that cfg.general.language is known
+  await loadI18n();
+
+  // 3. Start polling and lock watcher
+  startPolling();
+  startLockPoll();
+
+  // 4. Immediate lock check
+  try {
+    const lock = await apiFetch('/api/runtime-lock');
+    if(lock.active) showLoading(lock.msg || p('loading_default'));
+  } catch {}
+
+  // 5. Full data load
+  load();
+}
+
+function getToken(){ return sessionStorage.getItem('bw_token')||''; }
+
+function apiFetch(url,opts={}){
+  opts.headers={...(opts.headers||{}),'X-Auth-Token':getToken()};
+  return fetch(API+url,opts).then(r=>{
+    if(r.status===401){ sessionStorage.removeItem('bw_token'); stopPolling(); location.reload(); }
+    return r.json();
+  });
+}
+
+async function changePassword(){
+  const current=document.getElementById('pw-current').value;
+  const nw=document.getElementById('pw-new').value;
+  const confirm=document.getElementById('pw-confirm').value;
+  if(!current||!nw) return toast(p('toast_pw_error_fields'),'err');
+  if(nw!==confirm) return toast(p('toast_pw_error_match'),'err');
+  if(nw.length<4) return toast(p('toast_pw_error_short'),'err');
+  const d=await apiFetch('/api/auth/change-password',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({current,novo:nw})});
+  if(d.ok){ toast(p('toast_pw_changed'),'ok'); ['pw-current','pw-new','pw-confirm'].forEach(id=>document.getElementById(id).value=''); }
+  else toast(d.error||p('toast_pw_wrong'),'err');
+}
+
+window.addEventListener('load', async () => {
+  // Load i18n immediately — /api/i18n is public, no auth required.
+  // This ensures data-i18n elements on the login screen are also translated.
+  await loadI18n();
+
+  const token = getToken();
+  if (token) apiFetch('/api/auth/check').then(d => {
+    if (d.ok) {
+      document.getElementById('login-screen').style.display = 'none';
+      document.getElementById('app').style.display = 'block';
+      _bootApp();
+    }
+  }).catch(() => {});
+});
+
+async function load(){
+  try {
+    const [c,srv,w,st,ph,th]=await Promise.all([
+      apiFetch('/api/config'),
+      apiFetch('/api/servers'),
+      apiFetch('/api/wallets'),
+      apiFetch('/api/state'),
+      apiFetch('/api/pricehistory').catch(()=>[]),
+      apiFetch('/api/txhistory').catch(()=>{}),
+    ]);
+    cfg    =(c  &&typeof c ==='object'&&!Array.isArray(c)) ?c :cfg;
+    servers=Array.isArray(srv)?srv:servers;
+    wallets=Array.isArray(w)?w:wallets;
+    state  =(st &&typeof st==='object'&&!Array.isArray(st))?st:state;
+    priceHistory=Array.isArray(ph)?ph:priceHistory;
+    txHistory=(th&&typeof th==='object'&&!Array.isArray(th))?th:txHistory;
+    // Fee: separate fetch, does not block the main load
+    apiFetch('/api/fee').then(d=>{ if(d.ok){ feeData=d.fees; renderFee(); } }).catch(()=>{});
+    render();
+  } catch(e){ toast(p('toast_load_error',{error:e.message}),'err'); }
+}
+
+function render(){
+  applyLocale();
+  renderOverview(); renderServers(); renderAddresses();
+  if(!_walletEditActive()) renderWallets();
+  // renderTxHistory only when the tab is visible (avoids unnecessary work)
+  if(document.getElementById('page-transactions')?.classList.contains('active')) renderTxHistory();
+  if(!_settingsActive||_settingsFocused()||_settingsDirty) return;
+  renderSettings();
+}
+
+// Returns true if focus is inside the wallet editing area
+// OR if there are unsaved color changes — both block polling re-render
+function _walletEditActive(){
+  if(_pendingColorChange.size > 0) return true;
+  const a = document.activeElement;
+  if(!a) return false;
+  return !!(document.getElementById('wallet-list')?.contains(a));
+}
+
+let _settingsActive=false, _settingsDirty=false;
+function _settingsFocused(){ const a=document.activeElement; return a&&document.getElementById('page-settings')?.contains(a); }
+function markSettingsDirty(){ _settingsDirty=true; }
+function clearSettingsDirty(){ _settingsDirty=false; }
+
+function nav(id){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  document.getElementById('page-'+id).classList.add('active');
+  event.currentTarget.classList.add('active');
+  _settingsActive=(id==='settings');
+  if(id==='addresses') renderAddresses();
+  if(id==='transactions') renderTxHistory();
+  if(id==='settings'){ _settingsDirty=false; renderSettings(); syncNotifSubs(); }
+}
+
+function renderOverview(){
+  const allAddrs=flatState();
+  const withBal=allAddrs.filter(a=>a.balanceSat>0);
+
+  // Confirmed balance = sum of balanceSat (Electrum already deducts mempool from balance)
+  // Pending mempool = sum of mempoolTxids not yet in confirmed txids
+  // Electrum includes unconfirmed in balance, so we compute separately via txHistory
+  const confirmedSat = allAddrs.reduce((s,a)=>s+(a.balanceSat||0),0);
+  const confirmedBtc = confirmedSat/1e8;
+
+  // Pending mempool per wallet — read from txHistory
+  const mempoolByWallet = {};
+  for(const [wName, wData] of Object.entries(txHistory)){
+    if(!wData?.txids) continue;
+    for(const tx of Object.values(wData.txids)){
+      if(!tx.mempool) continue;
+      mempoolByWallet[wName] = (mempoolByWallet[wName]||0) + (tx.valueSat||0);
+    }
+  }
+  const mempoolEntries = Object.entries(mempoolByWallet).filter(([,v])=>v!==0);
+  const mempoolTotalSat = mempoolEntries.reduce((s,[,v])=>s+v,0);
+
+  document.getElementById('m-wallets').textContent=wallets.length;
+  const _mwb=document.getElementById('m-withbal'); if(_mwb) _mwb.textContent=withBal.length;
+  document.getElementById('m-total').textContent=confirmedBtc.toFixed(8);
+
+  // Mempool sub-line in the balance card
+  const mempoolLine = document.getElementById('m-mempool-line');
+  if(mempoolLine){
+    if(mempoolEntries.length){
+      const sign = mempoolTotalSat>=0?'+':'-';
+      const btc = (Math.abs(mempoolTotalSat)/1e8).toFixed(8);
+      const col = mempoolTotalSat>=0 ? 'var(--green)' : 'var(--red)';
+      const tip = mempoolEntries.map(([w,v])=>{
+        const s=v>=0?'+':'-';
+        return `${s}${(Math.abs(v)/1e8).toFixed(8)} ${w}`;
+      }).join(' · ');
+      mempoolLine.title = tip;
+      mempoolLine.innerHTML = `<span style="color:${col}">⏳ ${sign}${btc} BTC na mempool</span>`;
+      mempoolLine.style.display='block';
+    } else {
+      mempoolLine.style.display='none';
+    }
+  }
+
+  // Fiat value (confirmed balance only)
+  const priceNow = _lastKnownPrice;
+  const cur = cfg.general?.currency||'USD';
+  const sym = cur === 'USD' ? '$' : cur === 'EUR' ? '€' : cur === 'GBP' ? '£' : cur === 'JPY' ? '¥' :
+              cur === 'BRL' ? 'R$' : cur === 'CHF' ? 'CHF' : cur === 'CNY' ? '¥' : cur === 'INR' ? '₹' :
+              cur === 'KRW' ? '₩' : cur === 'RUB' ? '₽' : cur === 'ARS' ? '$' : cur === 'ILS' ? '₪' :
+              cur === 'AED' ? 'د.إ' : cur === 'SAR' ? '﷼' : '$';
+  const fiatEl = document.getElementById('m-total-fiat');
+  const fiatLbl = document.getElementById('m-total-fiat-label');
+  if(priceNow && fiatEl){
+    fiatEl.textContent = sym + (confirmedBtc*priceNow).toLocaleString('en-US',{maximumFractionDigits:0});
+    if(fiatLbl) if(fiatLbl) fiatLbl.textContent=p('metric_value',{currency:cur});
+  } else if(fiatEl){
+    fiatEl.textContent='—';
+    if(fiatLbl) fiatLbl.textContent=`valor em ${cur}`;
+  }
+
+  
+  const sel=cfg.electrum;
+  const ovSrv=document.getElementById('ov-server');
+  if(sel&&sel.host){
+    ovSrv.innerHTML=`<div style="display:flex;align-items:center;gap:12px">
+      <span id="ov-conn-dot" style="display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--text3);flex-shrink:0;transition:background .3s"></span>
+      <div>
+        <div style="font-size:14px;font-weight:500;color:var(--text)">${sel.name||sel.host}</div>
+        <div style="font-family:var(--mono);font-size:12px;color:var(--text2);margin-top:3px">${sel.host}:${sel.port} · ${sel.tls?'TLS':'TCP'}</div>
+      </div>
+    </div>`;
+    document.getElementById('conn-dot').className='status-dot';
+    document.getElementById('conn-text').textContent=p('status_testing');
+    apiFetch('/api/server-status').then(d=>{
+      const ok=d.ok;
+      const od=document.getElementById('ov-conn-dot');
+      if(od){ od.style.background=ok?'var(--green)':'var(--red)'; od.style.boxShadow=ok?'0 0 6px var(--green)':'none'; }
+      document.getElementById('conn-dot').className='status-dot '+(ok?'ok':'err');
+      document.getElementById('conn-text').textContent=ok?sel.host.slice(0,18):p('status_no_connection');
+    }).catch(()=>{
+      const od=document.getElementById('ov-conn-dot');
+      if(od){ od.style.background='var(--red)'; od.style.boxShadow='none'; }
+      document.getElementById('conn-dot').className='status-dot err';
+      document.getElementById('conn-text').textContent=p('status_error');
+    });
+  } else {
+    ovSrv.innerHTML=`<div style="color:var(--text3);font-family:var(--mono);font-size:13px">${p('server_no_config')}</div>`;
+    document.getElementById('conn-dot').className='status-dot err';
+    document.getElementById('conn-text').textContent=p('status_no_server');
+  }
+  fetchPrice();
+  renderPriceChart();
+  renderPortfolioChart();
+}
+
+// Current price in memory — used to compute fiat value in metrics
+let _lastKnownPrice = 0;
+
+async function fetchPrice(){
+  try {
+    const d=await apiFetch('/api/price'); if(!d.ok) return;
+    const price=d.usd;
+    _lastKnownPrice = price;
+    const updatedSec=d.updatedAt?Math.round((Date.now()-d.updatedAt)/1000):null;
+    const ageLabel=updatedSec!==null?(updatedSec<60?p('price_age_sec',{n:updatedSec}):p('price_age_min',{n:Math.round(updatedSec/60)})):'—';
+    const cur=cfg.general?.currency||'USD';
+    const sym = cur === 'USD' ? '$' : cur === 'EUR' ? '€' : cur === 'GBP' ? '£' : cur === 'JPY' ? '¥' :
+                cur === 'BRL' ? 'R$' : cur === 'CHF' ? 'CHF' : cur === 'CNY' ? '¥' : cur === 'INR' ? '₹' :
+                cur === 'KRW' ? '₩' : cur === 'RUB' ? '₽' : cur === 'ARS' ? '$' : cur === 'ILS' ? '₪' :
+                cur === 'AED' ? 'د.إ' : cur === 'SAR' ? '﷼' : '$';
+    document.getElementById('price-val').textContent=sym+price.toLocaleString('en-US',{maximumFractionDigits:0});
+    const el=document.getElementById('price-change'); el.textContent=p('price_live'); el.className='price-change price-up';
+    document.getElementById('price-meta').textContent=p('price_meta',{currency:cur,age:ageLabel});
+    document.getElementById('price-card').style.display='block';
+    // Update fiat value in metrics without re-rendering everything
+    const allAddrs2=flatState();
+    const confirmedSat2=allAddrs2.reduce((s,a)=>s+(a.balanceSat||0),0);
+    const fiatEl=document.getElementById('m-total-fiat');
+    if(fiatEl) fiatEl.textContent=sym+(confirmedSat2/1e8*price).toLocaleString('en-US',{maximumFractionDigits:0});
+    const fiatLbl2=document.getElementById('m-total-fiat-label');
+    if(fiatLbl2) if(fiatLbl2) fiatLbl2.textContent=p('metric_value',{currency:cur});
+  } catch{}
+}
+
+function renderFee(){
+  if(!feeData) return;
+  const fast=feeData.fastestFee||feeData.halfHourFee||'—';
+  const med =feeData.halfHourFee||feeData.hourFee||'—';
+  const slow=feeData.hourFee||feeData.economyFee||'—';
+  const mf=document.getElementById('m-fees-metric');
+  if(mf){
+    document.getElementById('fee-fast-m').textContent=fast;
+    document.getElementById('fee-med-m').textContent=med;
+    document.getElementById('fee-slow-m').textContent=slow;
+    mf.style.display='flex';
+  }
+}
+
+// ── Price Chart ──────────────────────────────────────────────────────────────
+let _chartPrice = null;
+function renderPriceChart(){
+  if(!priceHistory||!priceHistory.length) return;
+  const canvas = document.getElementById('chart-price');
+  if(!canvas) return;
+  const cur = cfg.general?.currency||'USD';
+  const dateLocale = cfg.general?.dateLocale || 'en-US';
+
+  // Filter to only show points recorded in the active currency.
+  // Points without a currency stamp (legacy) are assumed to match.
+  let pts = priceHistory.filter(pt => !pt.c || pt.c === cur);
+  if(!pts.length){ if(_chartPrice){ _chartPrice.destroy(); _chartPrice=null; } return; }
+
+  // Decimate points if too many (keep up to 500 for performance)
+  if(pts.length > 500){
+    const step = Math.ceil(pts.length/500);
+    const last = pts[pts.length-1];
+    pts = pts.filter((_,i)=>i%step===0);
+    // ensure the last (most recent) point always appears
+    if(pts[pts.length-1] !== last) pts.push(last);
+  }
+
+  const labels = pts.map(pt=>{
+    const d=new Date(pt.t);
+    return d.toLocaleString(dateLocale,{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit',hour12:false});
+  });
+  const data = pts.map(pt=>pt.p);
+
+  const style = getComputedStyle(document.documentElement);
+  const accent= style.getPropertyValue('--accent').trim()||'#f0c040';
+  const border= style.getPropertyValue('--border').trim()||'#2a2a2a';
+  const text2 = style.getPropertyValue('--text2').trim()||'#aaaaaa';
+
+  if(_chartPrice){ _chartPrice.destroy(); _chartPrice=null; }
+  _chartPrice = new Chart(canvas,{
+    type:'line',
+    data:{
+      labels,
+      datasets:[{
+        data,
+        borderColor: accent,
+        borderWidth: 1.5,
+        pointRadius: 0,
+        tension: 0.3,
+        fill: true,
+        backgroundColor: ctx=>{
+          const g=ctx.chart.ctx.createLinearGradient(0,0,0,ctx.chart.height);
+          g.addColorStop(0,'rgba(240,192,64,0.18)');
+          g.addColorStop(1,'rgba(240,192,64,0)');
+          return g;
+        },
+      }]
+    },
+    options:{
+      responsive:true,
+      maintainAspectRatio:false,
+      animation:false,
+      plugins:{
+        legend:{display:false},
+        tooltip:{
+          mode:'index',intersect:false,
+          backgroundColor:'#1c1c1c',borderColor:border,borderWidth:1,
+          titleColor:text2,bodyColor:accent,
+          callbacks:{
+            title:items=>labels[items[0].dataIndex],
+            label:item=>`${cur} ${item.raw.toLocaleString('en-US',{maximumFractionDigits:0})}`,
+          }
+        }
+      },
+      scales:{
+        x:{
+          ticks:{color:text2,font:{size:10},maxTicksLimit:6,maxRotation:0},
+          grid:{color:border},
+        },
+        y:{
+          ticks:{color:text2,font:{size:10},callback:v=>`${cur} ${(v/1000).toFixed(0)}k`},
+          grid:{color:border},
+        }
+      }
+    }
+  });
+}
+
+// ── Portfolio Chart ──────────────────────────────────────────────────────────
+let _chartPortfolio = null;
+function renderPortfolioChart(){
+  if(!Object.keys(txHistory).length) return;
+  const canvas = document.getElementById('chart-portfolio');
+  if(!canvas) return;
+  const card = document.getElementById('portfolio-card');
+  const notice = document.getElementById('pf-mempool-notice');
+
+  // Populate wallet filter select (without resetting current selection)
+  const pfSel = document.getElementById('pf-filter-wallet');
+  if(pfSel){
+    const curVal = pfSel.value;
+    const walletNames = Object.keys(txHistory);
+    pfSel.innerHTML=`<option value="">${p('addr_filter_all_wallets')}</option>`;
+    walletNames.forEach(n=>{
+      const o=document.createElement('option');
+      o.value=n; o.textContent=n;
+      if(n===curVal) o.selected=true;
+      pfSel.appendChild(o);
+    });
+  }
+
+  const filterWallet = pfSel?.value||'';
+
+  // Collect only CONFIRMED transactions for the selected filter
+  const confirmed = [];
+  // mempoolByWallet: { walletName -> satAmount }
+  const mempoolByWallet = {};
+
+  for(const [wName, wData] of Object.entries(txHistory)){
+    if(filterWallet && wName!==filterWallet) continue;
+    if(!wData.txids) continue;
+    for(const [txid, tx] of Object.entries(wData.txids)){
+      if(tx.dropped) continue; // skip dropped/RBF txs — do not affect real balance
+      if(tx.mempool){
+        mempoolByWallet[wName] = (mempoolByWallet[wName]||0) + (tx.valueSat||0);
+      } else {
+        confirmed.push({...tx, txid, wallet: wName});
+      }
+    }
+  }
+
+  // Mempool label — one line per wallet when 'all', single line when filter active
+  const mempoolEntries = Object.entries(mempoolByWallet).filter(([,v])=>v!==0);
+  if(notice){
+    if(mempoolEntries.length){
+      const lines = mempoolEntries.map(([wName, sat])=>{
+        const isPositive = sat >= 0;
+        const sign = isPositive ? '+' : '-';
+        const btc = (Math.abs(sat)/1e8).toFixed(8);
+        const valColor = isPositive ? 'var(--green)' : 'var(--red)';
+        return `<div style="padding:5px 12px;display:flex;align-items:baseline;gap:8px">
+          <span style="color:${valColor};font-weight:500;font-family:var(--mono)">${sign}${btc} BTC</span>
+          <span style="color:var(--text3);font-size:11px">mempool${filterWallet?'':` · ${wName}`}</span>
+        </div>`;
+      }).join('');
+      notice.innerHTML=`<div style="background:rgba(240,192,64,0.06);border:1px solid rgba(240,192,64,0.2);border-radius:5px;font-family:var(--mono);font-size:12px;margin-bottom:12px">
+        <div style="padding:6px 12px 2px;font-size:10px;letter-spacing:0.08em;text-transform:uppercase;color:var(--text3)" data-i18n="tx_status_mempool">⏳ mempool</div>
+        ${lines}
+      </div>`;
+      notice.style.display='block';
+    } else {
+      notice.style.display='none';
+    }
+  }
+
+  if(!confirmed.length){ card.style.display=(mempoolEntries.length>0)?'block':'none'; return; }
+  card.style.display='block';
+
+  // Ordena cronologicamente por height
+  confirmed.sort((a,b)=>{
+    if((a.height||0)!==(b.height||0)) return (a.height||0)-(b.height||0);
+    return (a.ts||0)-(b.ts||0);
+  });
+
+  // Accumulate confirmed balance point by point
+  let running = 0;
+  const ptLabels=[], ptData=[];
+  for(const ev of confirmed){
+    running += ev.valueSat||0;
+    ptLabels.push(`#${ev.height}`);
+    ptData.push(+(running/1e8).toFixed(8));
+  }
+
+  // Y axis: min=0 (or minimum if negative balance), max=historical maximum
+  const maxVal = Math.max(...ptData, 0);
+  const minVal = Math.min(...ptData, 0);
+
+  const style=getComputedStyle(document.documentElement);
+  const green=style.getPropertyValue('--green').trim()||'#4ade80';
+  const border=style.getPropertyValue('--border').trim()||'#2a2a2a';
+  const text2=style.getPropertyValue('--text2').trim()||'#aaaaaa';
+
+  if(_chartPortfolio){ _chartPortfolio.destroy(); _chartPortfolio=null; }
+
+  _chartPortfolio = new Chart(canvas,{
+    type:'line',
+    data:{
+      labels:ptLabels,
+      datasets:[{
+        label:'confirmed balance',
+        data:ptData,
+        borderColor:green,
+        borderWidth:2,
+        pointRadius: ptData.length<=60?3:0,
+        pointBackgroundColor:green,
+        tension:0.1,
+        fill:true,
+        backgroundColor:ctx=>{
+          const g=ctx.chart.ctx.createLinearGradient(0,0,0,ctx.chart.height);
+          g.addColorStop(0,'rgba(74,222,128,0.18)');
+          g.addColorStop(1,'rgba(74,222,128,0)');
+          return g;
+        },
+      }]
+    },
+    options:{
+      responsive:true,
+      maintainAspectRatio:false,
+      animation:false,
+      plugins:{
+        legend:{display:false},
+        tooltip:{
+          mode:'index',intersect:false,
+          backgroundColor:'#1c1c1c',borderColor:border,borderWidth:1,
+          titleColor:text2,bodyColor:green,
+          callbacks:{
+            label:item=>`${item.raw.toFixed(8)} BTC`,
+          }
+        }
+      },
+      scales:{
+        x:{
+          ticks:{color:text2,font:{size:10},maxTicksLimit:8,maxRotation:0},
+          grid:{color:border},
+        },
+        y:{
+          min: minVal>=0?0:minVal,
+          suggestedMax: maxVal*1.05||1,
+          ticks:{color:text2,font:{size:10},callback:v=>v.toFixed(4)},
+          grid:{color:border},
+        }
+      }
+    }
+  });
+}
+
+// Available colors for wallet labels
+const LABEL_COLORS=[
+  {id:'amber',  bg:'rgba(240,192,64,0.15)',  fg:'#f0c040'},
+  {id:'green',  bg:'rgba(74,222,128,0.15)',  fg:'#4ade80'},
+  {id:'blue',   bg:'rgba(96,165,250,0.15)',  fg:'#60a5fa'},
+  {id:'red',    bg:'rgba(248,113,113,0.15)', fg:'#f87171'},
+  {id:'purple', bg:'rgba(167,139,250,0.15)', fg:'#a78bfa'},
+  {id:'cyan',   bg:'rgba(34,211,238,0.15)',  fg:'#22d3ee'},
+];
+
+function labelBadgeHtml(w){
+  if(!w.label) return '';
+  const col=LABEL_COLORS.find(c=>c.id===w.labelColor)||LABEL_COLORS[0];
+  return `<span class="w-label-badge" style="background:${col.bg};color:${col.fg}">${w.label}</span>`;
+}
+
+// Set of indices with changed but unsaved color — protects against polling re-render
+const _pendingColorChange = new Set();
+
+function renderWallets(){
+  const el=document.getElementById('wallet-list');
+  if(!wallets.length){ el.innerHTML=`<div style="color:var(--text3);font-size:13px;font-family:var(--mono)">${p('wallets_empty')}</div>`; return; }
+  el.innerHTML=wallets.map((w,i)=>{
+    const notifyMempool=w.notify?.mempoolPending!==false;
+    const notifyConfirm=w.notify?.txConfirmed!==false;
+    const activeColor = w.labelColor||'amber';
+    const swatches=LABEL_COLORS.map(c=>
+      `<span class="label-swatch${activeColor===c.id?' active':''}"
+        style="background:${c.fg};opacity:${activeColor===c.id?'1':'0.35'};border:2px solid ${activeColor===c.id?'#fff':'transparent'}"
+        onclick="setLabelColor(${i},'${c.id}')" title="${c.id}"></span>`
+    ).join('');
+    // Nome com badge colorido (fundo + texto)
+    const col=LABEL_COLORS.find(c=>c.id===activeColor)||LABEL_COLORS[0];
+    const walletNameHtml=`<span class="w-label-badge" style="background:${col.bg};color:${col.fg};font-size:14px;font-weight:500;padding:3px 10px">${w.name}</span>`;
+    return `<div class="wallet-item" id="wi-${i}">
+      <div class="wallet-header">
+        <div class="wallet-name">${walletNameHtml}</div>
+        <button class="btn btn-sm btn-danger" onclick="removeWallet(${i})">${p('wallet_remove')}</button>
+      </div>
+      <div class="wallet-desc" style="white-space:pre-wrap;word-break:break-all;overflow:visible;font-size:13px;line-height:1.7;color:var(--text2)">${w.descriptor}</div>
+      <div class="wallet-meta">${p('wallet_start_index',{n:w.startIndex??0})} · ${p('wallet_network')}</div>
+      <div class="label-edit-row">
+        <span style="font-size:11px;color:var(--text3);font-family:var(--mono);margin-right:4px">${p('wallet_color_label')}</span>
+        <div class="label-color-pick">${swatches}</div>
+        <button class="btn btn-sm" onclick="saveLabel(${i})">${p('wallet_save_color')}</button>
+      </div>
+      <div class="wallet-notif">
+        <div class="wallet-notif-item">
+          <label class="wn-toggle"><input type="checkbox" ${notifyMempool?'checked':''} onchange="toggleWalletNotif(${i},'mempoolPending',this.checked)"><span class="wn-slider"></span></label>
+          <div class="wn-label"><span class="wn-title">${p('wallet_notif_mempool_title')}</span><span class="wn-desc">${p('wallet_notif_mempool_desc')}</span></div>
+        </div>
+        <div class="wallet-notif-item">
+          <label class="wn-toggle"><input type="checkbox" ${notifyConfirm?'checked':''} onchange="toggleWalletNotif(${i},'txConfirmed',this.checked)"><span class="wn-slider"></span></label>
+          <div class="wn-label"><span class="wn-title">${p('wallet_notif_confirm_title')}</span><span class="wn-desc">${p('wallet_notif_confirm_desc')}</span></div>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+  // Clear pending changes on re-render (re-render already reflects in-memory state)
+  _pendingColorChange.clear();
+}
+
+function setLabelColor(i,colorId){
+  const w=wallets[i]; if(!w) return;
+  w.labelColor=colorId;
+  // Mark as pending — prevents polling from overwriting until saved
+  _pendingColorChange.add(i);
+
+  const item=document.getElementById(`wi-${i}`);
+  if(!item) return;
+  const col=LABEL_COLORS.find(c=>c.id===colorId)||LABEL_COLORS[0];
+
+  // Atualiza swatches
+  item.querySelectorAll('.label-swatch').forEach((s,si)=>{
+    const c=LABEL_COLORS[si];
+    s.style.opacity=c.id===colorId?'1':'0.35';
+    s.style.borderColor=c.id===colorId?'#fff':'transparent';
+  });
+
+  // Atualiza badge do nome (fundo + texto)
+  const nameEl=item.querySelector('.wallet-name .w-label-badge');
+  if(nameEl){
+    nameEl.style.background=col.bg;
+    nameEl.style.color=col.fg;
+  }
+}
+
+async function saveLabel(i){
+  const w=wallets[i]; if(!w) return;
+  const color=w.labelColor||'amber';
+  try {
+    await apiFetch(`/api/wallet-label/${encodeURIComponent(w.name)}`,{
+      method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({label:'',color})
+    });
+    _pendingColorChange.delete(i); // clear pending after save
+    toast(p('wallet_toast_color',{name:w.name}),'ok');
+  } catch(e){ toast(p('toast_save_error',{error:e.message}),'err'); }
+}
+
+async function toggleWalletNotif(i,key,value){
+  if(!wallets[i].notify) wallets[i].notify={};
+  wallets[i].notify[key]=value;
+  await apiFetch('/api/wallets',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(wallets)});
+  toast(p(value?'wallet_toast_notif_on':'wallet_toast_notif_off',{wallet:wallets[i].name,type:key==='mempoolPending'?p('wallet_notif_type_mempool'):p('wallet_notif_type_confirm')}),'ok');
+}
+
+function toggleAddWallet(){
+  const f=document.getElementById('add-wallet-form');
+  const c=document.getElementById('add-chevron');
+  const open=f.classList.toggle('open');
+  c.style.transform=open?'rotate(180deg)':'';
+  if(!open) _normalizedDescriptor=null;
+}
+
+let _normalizedDescriptor=null;
+
+async function previewDescriptor(){
+  const desc=document.getElementById('w-desc').value.trim();
+  const start=parseInt(document.getElementById('w-start').value)||0;
+  const prev=document.getElementById('w-preview');
+  if(!desc) return toast(p('wallet_toast_error_desc'),'err');
+  try {
+    const d=await apiFetch('/api/derive',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({descriptor:desc,network:'mainnet',startIndex:start,count:3})});
+    // Erro da API — limpa preview anterior e exibe erro em vermelho
+    if(d.error){
+      _normalizedDescriptor=null;
+      prev.style.display='block';
+      prev.innerHTML=`<div style="color:var(--red);font-size:12px;word-break:break-all">${p('derive_error_invalid',{error:d.error})}</div>`;
+      return;
+    }
+    if(!d.addresses||d.addresses.length===0){
+      _normalizedDescriptor=null;
+      prev.style.display='block';
+      prev.innerHTML=`<div style="color:var(--red);font-size:12px">${p('derive_error_none')}</div>`;
+      return;
+    }
+    _normalizedDescriptor=d.normalized||desc;
+    prev.style.display='block';
+    // Determine label: standalone key (no wrapper) → "consolidated key", descriptor → "consolidated descriptor"
+    const isRawKey=!d.normalized||(!/^(tr|wpkh|pkh|sh|wsh|addr)\(/.test(d.normalized)&&!d.normalized.startsWith('addr('));
+    const isSingleAddr=d.normalized&&d.normalized.startsWith('addr(');
+    const consolidadoLabel=isSingleAddr?'✓ address:':isRawKey?'✓ consolidated key:':'✓ consolidated descriptor:';
+    const consolidadoNote=`<div style="color:var(--accent);margin-bottom:8px;font-size:11px;word-break:break-all">${consolidadoLabel}<br>${d.normalized}</div>`;
+    prev.innerHTML=consolidadoNote+(isSingleAddr?'<div style="color:var(--text3);margin-bottom:6px;font-size:11px">address:</div>':'<div style="color:var(--text3);margin-bottom:6px;font-size:11px">preview (3 addresses):</div>')+
+      d.addresses.map(a=>isSingleAddr?`<div>${a.address}</div>`:`<div>[${a.chain===0?'ext':'chg'}/${a.index}] ${a.address}</div>`).join('');
+    toast(p('derive_ok',{count:d.addresses.length}),'ok');
+  } catch(e){
+    _normalizedDescriptor=null;
+    prev.style.display='block';
+    prev.innerHTML=`<div style="color:var(--red);font-size:12px">✗ erro: ${e.message}</div>`;
+  }
+}
+
+async function saveWallet(){
+  const rawDesc=document.getElementById('w-desc').value.trim();
+  const wName=document.getElementById('w-name').value.trim();
+  if(!wName) return toast(p('wallet_toast_error_name'),'err');
+  if(!rawDesc) return toast(p('wallet_toast_error_desc'),'err');
+  showLoading(p('loading_saving',{name:wName}));
+  await new Promise(r => setTimeout(r, 0));
+  queueWalletOp(async () => {
+    try {
+      let normalized=_normalizedDescriptor;
+      if(!normalized){
+        const d=await apiFetch('/api/derive',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({descriptor:rawDesc,startIndex:parseInt(document.getElementById('w-start').value)||0,count:1})});
+        if(d.error){ hideLoading(); toast(p('wallet_toast_invalid_desc',{error:d.error}),'err'); return; }
+        if(!d.addresses||d.addresses.length===0){ hideLoading(); toast(p('derive_error_none'),'err'); return; }
+        normalized=d.normalized||rawDesc;
+      }
+      const w={
+        name: wName,
+        network: 'mainnet',
+        startIndex: parseInt(document.getElementById('w-start').value)||0,
+        descriptor: normalized,
+        labelColor: 'amber',
+        notify: { mempoolPending: true, txConfirmed: true }
+      };
+      _normalizedDescriptor=null;
+      wallets.push(w);
+      await apiFetch('/api/wallets',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(wallets)});
+      document.getElementById('add-wallet-form').classList.remove('open');
+      document.getElementById('add-chevron').style.transform='';
+      document.getElementById('w-name').value='';
+      document.getElementById('w-desc').value='';
+      document.getElementById('w-start').value='0';
+      document.getElementById('w-preview').style.display='none';
+      document.getElementById('w-autodetect').style.display='none';
+    } catch(e){
+      hideLoading();
+      toast(p('toast_save_error',{error:e.message}),'err');
+    }
+  });
+}
+
+async function removeWallet(i){
+  const ok = await confirmModal(p('wallet_confirm_remove',{name:wallets[i].name}));
+  if(!ok) return;
+  const name=wallets[i].name;
+  showLoading(p('loading_removing',{name}));
+  await new Promise(r => setTimeout(r, 0));
+  queueWalletOp(async () => {
+    try {
+      wallets.splice(i,1);
+      await apiFetch('/api/wallets',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(wallets)});
+      // Update list and local txHistory immediately — does not depend on polling
+      renderWallets();
+      // Remove local txHistory entries so the transaction table
+      // does not show removed wallet txs until the next server load()
+      if(txHistory[name]){
+        delete txHistory[name];
+        if(document.getElementById('page-transactions')?.classList.contains('active'))
+          renderTxHistory();
+        renderPortfolioChart();
+      }
+    } catch(e){
+      hideLoading();
+      toast(p('toast_save_error',{error:e.message}),'err');
+    }
+  });
+}
+
+function flatState(){
+  const rows=[];
+  for(const [wName,wData] of Object.entries(state)){
+    if(typeof wData!=='object') continue;
+    for(const [label,lData] of Object.entries(wData)){
+      if(typeof lData!=='object') continue;
+      const chain=label==='externo'?0:1;
+      for(const [addr,aData] of Object.entries(lData)) rows.push({wallet:wName,chain,address:addr,...aData});
+    }
+  }
+  return rows;
+}
+
+// ── Transaction history table ────────────────────────────────────────────────
+const TX_PAGE_SIZE = 20;
+let _txPage = 0;
+
+function txPage(dir){
+  _txPage = Math.max(0, _txPage + dir);
+  renderTxHistory();
+}
+
+function renderTxHistory(){
+  const tbody = document.getElementById('tx-tbody');
+  if(!tbody) return;
+
+  // Monta lista flat de todas as txs
+  const allTxs = [];
+  for(const [wName, wData] of Object.entries(txHistory)){
+    if(!wData?.txids) continue;
+    for(const [txid, tx] of Object.entries(wData.txids)){
+      allTxs.push({...tx, txid, wallet: wName});
+    }
+  }
+
+  if(!allTxs.length){
+    tbody.innerHTML=`<tr><td colspan="5" style="text-align:center;color:var(--text3);padding:24px">${p('tx_empty')}</td></tr>`;
+    return;
+  }
+
+  // Update wallet filter select
+  const sel = document.getElementById('tx-filter-wallet');
+  if(sel){
+    const cur = sel.value;
+    sel.innerHTML=`<option value="">${p('tx_all_wallets')}</option>`;
+    [...new Set(allTxs.map(t=>t.wallet))].forEach(n=>{
+      const o=document.createElement('option');
+      o.value=n; o.textContent=n;
+      if(n===cur) o.selected=true;
+      sel.appendChild(o);
+    });
+  }
+
+  // Filter by selected wallet
+  const filterWallet = sel?.value||'';
+  let rows = filterWallet ? allTxs.filter(t=>t.wallet===filterWallet) : allTxs;
+
+  // Ordena: mais recente no topo
+  // Confirmadas: por height desc; mempool: por ts desc, aparecem antes das confirmadas
+  rows.sort((a,b)=>{
+    if(a.mempool && !b.mempool) return -1;
+    if(!a.mempool && b.mempool) return 1;
+    if(!a.mempool && !b.mempool){
+      if((b.height||0) !== (a.height||0)) return (b.height||0)-(a.height||0);
+    }
+    return (b.ts||0)-(a.ts||0);
+  });
+
+  // Pagination
+  const total = rows.length;
+  const pages = Math.ceil(total/TX_PAGE_SIZE);
+  _txPage = Math.min(_txPage, Math.max(0, pages-1));
+  const slice = rows.slice(_txPage*TX_PAGE_SIZE, (_txPage+1)*TX_PAGE_SIZE);
+
+  document.getElementById('tx-pginfo').textContent =
+    total ? `${_txPage+1} / ${pages} (${total} txs)` : '';
+  document.getElementById('tx-prev').disabled = _txPage===0;
+  document.getElementById('tx-next').disabled = _txPage>=pages-1;
+
+  const explorerBase=(cfg.general?.mempoolExplorer||'').replace(/\/$/,'');
+
+  const typeLabel = t => {
+    if(t.type==='received')         return `<span class="tx-type-recv">${p('tx_type_received')}</span>`;
+    if(t.type==='sent')             return `<span class="tx-type-sent">${p('tx_type_sent')}</span>`;
+    if(t.type==='sent_with_change') return `<span class="tx-type-sent">${p('tx_type_sent_change')}</span>`;
+    if(t.type==='consolidation')    return `<span class="tx-type-cons">${p('tx_type_consolidation')}</span>`;
+    return t.type||'—';
+  };
+
+  const fmtVal = tx => {
+    const sat = tx.valueSat||0;
+    const btc = (Math.abs(sat)/1e8).toFixed(8);
+    const cls = sat>0?'tx-type-recv':sat<0?'tx-type-sent':'';
+    const sign = sat>0?'+':sat<0?'-':'';
+    return `<span class="${cls}">${sign}${btc}</span>`;
+  };
+
+  const walletBadge = wName => {
+    const w = wallets.find(x=>x.name===wName);
+    if(w && w.labelColor){
+      const col=LABEL_COLORS.find(c=>c.id===w.labelColor)||LABEL_COLORS[0];
+      return `<span class="w-label-badge" style="background:${col.bg};color:${col.fg};font-size:12px;padding:2px 7px">${wName}</span>`;
+    }
+    return `<span style="color:var(--text)">${wName}</span>`;
+  };
+
+  const fmtStatus = tx => {
+    if(tx.dropped)  return `<span style="color:var(--red);font-style:italic">⚠️ dropped/RBF</span>`;
+    if(tx.mempool)  return `<span class="tx-mempool">${p('tx_status_mempool')}</span>`;
+    if(tx.height)   return `<span style="color:var(--text3)">🧱 ${tx.height}</span>`;
+    return `<span style="color:var(--text3)">${p('tx_status_confirmed')}</span>`;
+  };
+
+  const fmtTxid = tx => {
+    if(explorerBase)
+      return `<a href="${explorerBase}/tx/${tx.txid}" target="_blank" rel="noopener"
+        style="color:var(--text2);text-decoration:none;border-bottom:1px dotted var(--border2)"
+        title="${tx.txid}">${tx.txid}</a>`;
+    return `<span title="${tx.txid}" style="cursor:default">${tx.txid}</span>`;
+  };
+
+  if(!slice.length){
+    tbody.innerHTML=`<tr><td colspan="5" style="text-align:center;color:var(--text3);padding:24px">${p('tx_empty')}</td></tr>`;
+    const cards=document.getElementById('tx-cards');
+    if(cards) cards.innerHTML=`<div class="m-card" style="text-align:center;color:var(--text3)">${p('tx_empty')}</div>`;
+    return;
+  }
+
+  tbody.innerHTML = slice.map(tx=>`<tr>
+    <td>${typeLabel(tx)}</td>
+    <td>${walletBadge(tx.wallet)}</td>
+    <td style="text-align:right">${fmtVal(tx)}</td>
+    <td>${fmtTxid(tx)}</td>
+    <td>${fmtStatus(tx)}</td>
+  </tr>`).join('');
+
+  // Mobile card view
+  const cards=document.getElementById('tx-cards');
+  if(cards) cards.innerHTML = slice.map(tx=>`
+    <div class="m-card">
+      <div class="m-card-row">
+        <span>${typeLabel(tx)}</span>
+        <span style="font-weight:600">${fmtVal(tx)}</span>
+      </div>
+      <div class="m-card-row">
+        <span>${walletBadge(tx.wallet)}</span>
+        <span>${fmtStatus(tx)}</span>
+      </div>
+      <div class="m-card-addr">${fmtTxid(tx)}</div>
+    </div>`).join('');
+}
+
+function renderAddresses(){
+  const fWallet=document.getElementById('f-wallet')?.value||'';
+  const fChain=document.getElementById('f-chain')?.value;
+  const fBal=document.getElementById('f-bal')?.value;
+  const wSel=document.getElementById('f-wallet');
+  if(wSel){
+    const selected=wSel.value;
+    wSel.innerHTML=`<option value="">${p('addr_filter_all_wallets')}</option>`;
+    wallets.forEach(w=>{ const o=document.createElement('option'); o.value=w.name; o.textContent=w.name; if(w.name===selected) o.selected=true; wSel.appendChild(o); });
+  }
+  let rows=flatState();
+  if(fWallet) rows=rows.filter(r=>r.wallet===fWallet);
+  if(fChain!=='') rows=rows.filter(r=>r.chain===parseInt(fChain));
+  if(fBal==='1') rows=rows.filter(r=>(r.balanceSat||0)>0);
+  if(fBal==='0') rows=rows.filter(r=>(r.balanceSat||0)===0);
+  const tbody=document.getElementById('addr-tbody');
+  if(!rows.length){ tbody.innerHTML='<tr><td colspan="6" style="text-align:center;color:var(--text3);padding:24px">'+p('addr_empty')+'</td></tr>'; return; }
+  const explorerBase=(cfg.general?.mempoolExplorer||'').replace(/\/$/,'');
+
+  // Pre-compute the "elected" address for each outgoing mempool tx.
+  // To avoid polluting all inputs with a negative badge, pick only
+  // the wallet address with the highest balanceSat among those holding that txid.
+  // Chave: "walletName|txid" → address eleito
+  const _sentElected = new Map();
+  for(const [wName, wData] of Object.entries(txHistory)){
+    if(!wData?.txids) continue;
+    for(const [txid, tx] of Object.entries(wData.txids)){
+      if(!tx.mempool || tx.dropped) continue;
+      if(tx.type !== 'sent' && tx.type !== 'sent_with_change' && tx.type !== 'consolidation') continue;
+      // Find all addresses of this wallet that have this txid in mempoolTxids
+      const candidates = flatState().filter(r =>
+        r.wallet === wName && r.mempoolTxids?.includes(txid)
+      );
+      if(!candidates.length) continue;
+      // Elege o de maior balanceSat
+      const elected = candidates.reduce((best, r) =>
+        (r.balanceSat||0) > (best.balanceSat||0) ? r : best
+      );
+      _sentElected.set(`${wName}|${txid}`, elected.address);
+    }
+  }
+
+  tbody.innerHTML=rows.map((r,i)=>{
+    const bal=(r.balanceSat||0)/1e8;
+    const txCount=(r.txids?.length||0)+(r.mempoolTxids?.length||0);
+    const addrCell=explorerBase
+      ? `<a href="${explorerBase}/address/${r.address}" target="_blank" rel="noopener" style="color:inherit;text-decoration:none;border-bottom:1px dotted var(--border2)" title="${r.address}">${r.address}</a>`
+      : `<span title="${r.address}" style="cursor:default">${r.address}</span>`;
+    const w=wallets.find(x=>x.name===r.wallet);
+    const wCell = w?.labelColor
+      ? (()=>{ const col=LABEL_COLORS.find(c=>c.id===w.labelColor)||LABEL_COLORS[0]; return `<span class="w-label-badge" style="background:${col.bg};color:${col.fg};font-size:11px;padding:2px 6px">${r.wallet}</span>`; })()
+      : `<span style="color:var(--text2)">${r.wallet}</span>`;
+
+    // Compute pending mempool value for this address.
+    // Receives: shown on every address that appears in tx.addresses.
+    // Sends: shown only on the elected address (highest balanceSat of the wallet).
+    let mempoolSat = 0;
+    if(r.mempoolTxids?.length){
+      const wTxHistory = txHistory[r.wallet]?.txids || {};
+      for(const txid of r.mempoolTxids){
+        const tx = wTxHistory[txid];
+        if(!tx || !tx.mempool || tx.dropped) continue;
+        if(tx.type === 'received' && tx.addresses?.includes(r.address)){
+          mempoolSat += (tx.valueSat || 0);
+        } else if(tx.type === 'sent' || tx.type === 'sent_with_change' || tx.type === 'consolidation'){
+          if(_sentElected.get(`${r.wallet}|${txid}`) === r.address)
+            mempoolSat += (tx.valueSat || 0);
+        }
+      }
+    }
+    const mempoolColor = mempoolSat >= 0 ? 'var(--green)' : 'var(--red)';
+    const mempoolBg    = mempoolSat >= 0 ? 'rgba(74,222,128,0.10)' : 'rgba(248,113,113,0.10)';
+    const mempoolBadge = mempoolSat !== 0
+      ? `<span style="margin-left:6px;font-size:10px;font-family:var(--mono);padding:1px 6px;border-radius:3px;background:${mempoolBg};color:${mempoolColor}" title="pending in mempool">⏳ ${mempoolSat>0?'+':''}${(mempoolSat/1e8).toFixed(8)}</span>`
+      : '';
+
+    return `<tr><td style="color:var(--text3)">${i+1}</td><td><span class="chip ${r.chain===0?'chip-ext':'chip-chg'}">${r.chain===0?'ext':'chg'}</span></td><td>${wCell}</td><td class="${bal>0?'has-balance':''}">${addrCell}${mempoolBadge}</td><td style="text-align:right;${bal>0?'color:var(--green)':''}">${bal.toFixed(8)}</td><td style="text-align:right;color:var(--text3)">${txCount}</td></tr>`;
+  }).join('');
+
+  // Mobile card view
+  const addrCards = document.getElementById('addr-cards');
+  if(addrCards) addrCards.innerHTML = rows.map(r => {
+    const bal = (r.balanceSat||0)/1e8;
+    const txCount = (r.txids?.length||0)+(r.mempoolTxids?.length||0);
+    const w = wallets.find(x=>x.name===r.wallet);
+    const wCell = w?.labelColor
+      ? (()=>{ const col=LABEL_COLORS.find(c=>c.id===w.labelColor)||LABEL_COLORS[0]; return `<span class="w-label-badge" style="background:${col.bg};color:${col.fg};font-size:11px;padding:2px 6px">${r.wallet}</span>`; })()
+      : `<span style="color:var(--text3);font-size:11px">${r.wallet}</span>`;
+    const chainChip = `<span class="chip ${r.chain===0?'chip-ext':'chip-chg'}">${r.chain===0?'ext':'chg'}</span>`;
+    const addrLink = explorerBase
+      ? `<a href="${explorerBase}/address/${r.address}" target="_blank" rel="noopener" style="color:var(--text2);text-decoration:none;word-break:break-all">${r.address}</a>`
+      : `<span style="word-break:break-all;color:var(--text2)">${r.address}</span>`;
+    // Recompute mempool badge same logic as desktop
+    let mSat = 0;
+    if(r.mempoolTxids?.length){
+      const wTxH = txHistory[r.wallet]?.txids || {};
+      for(const txid of r.mempoolTxids){
+        const tx = wTxH[txid];
+        if(!tx || !tx.mempool || tx.dropped) continue;
+        if(tx.type === 'received' && tx.addresses?.includes(r.address)){
+          mSat += (tx.valueSat || 0);
+        } else if((tx.type==='sent'||tx.type==='sent_with_change'||tx.type==='consolidation') &&
+                  _sentElected.get(`${r.wallet}|${txid}`) === r.address){
+          mSat += (tx.valueSat || 0);
+        }
+      }
+    }
+    const mBadge = mSat !== 0
+      ? `<span style="font-size:11px;font-family:var(--mono);padding:2px 7px;border-radius:3px;background:${mSat>=0?'rgba(74,222,128,0.10)':'rgba(248,113,113,0.10)'};color:${mSat>=0?'var(--green)':'var(--red)'}">⏳ ${mSat>0?'+':''}${(mSat/1e8).toFixed(8)}</span>`
+      : '';
+    return `<div class="m-card">
+      <div class="m-card-row">
+        <span>${chainChip} ${wCell}</span>
+        <span style="${bal>0?'color:var(--green)':''};font-weight:600">${bal.toFixed(8)} BTC</span>
+      </div>
+      <div class="m-card-addr">${addrLink}</div>
+      <div class="m-card-row" style="margin-top:4px">
+        <span style="color:var(--text3);font-size:10px">${txCount} tx${txCount!==1?'s':''}</span>
+        ${mBadge}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function renderServers(){
+  const el=document.getElementById('server-list');
+  const sel=cfg.electrum;
+  el.innerHTML=servers.map((s,i)=>{
+    const isSelected=sel&&sel.host===s.host&&sel.port===s.port;
+    const isLocal=s.host.startsWith('192.168')||s.host==='localhost';
+    return `<div class="server-item"><div class="server-info"><div class="server-name">${s.name}</div><div class="server-addr">${s.host}:${s.port} · ${s.tls?'TLS':'TCP'}</div></div><div class="server-actions">${isLocal?`<span class="badge badge-local">${p('settings_server_local')}</span>`:''}${isSelected?`<span class="badge badge-selected">${p('settings_server_active')}</span>`:`<button class="btn btn-sm" onclick="selectServer(${i})">${p('settings_server_use')}</button>`}${!s.builtin?`<button class="btn btn-sm btn-danger" onclick="removeServer(${i})">${p('settings_server_remove')}</button>`:''}</div></div>`;
+  }).join('');
+}
+
+function toggleAddServer(){
+  const f=document.getElementById('add-server-form');
+  const c=document.getElementById('srv-chevron');
+  const open=f.classList.toggle('open');
+  c.style.transform=open?'rotate(180deg)':'';
+}
+
+async function selectServer(i){
+  const s=servers[i];
+  showLoading(p('loading_connecting',{name:s.name}));
+  await new Promise(r => setTimeout(r, 0));
+  await apiFetch('/api/config',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({electrum:{name:s.name,host:s.host,port:s.port,tls:s.tls}})});
+  cfg.electrum={name:s.name,host:s.host,port:s.port,tls:s.tls};
+  toast(p('toast_server_selected',{name:s.name}),'ok');
+}
+
+async function testServer(){
+  const host=document.getElementById('s-host').value.trim();
+  const port=parseInt(document.getElementById('s-port').value);
+  const tls=document.getElementById('s-tls').value==='true';
+  if(!host||!port) return toast(p('toast_server_fill'),'err');
+  const d=await apiFetch('/api/test-server',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({host,port,tls})});
+  d.ok?toast(p('toast_connection_ok',{version:d.version}),'ok'):toast(p('toast_connection_fail',{error:d.error}),'err');
+}
+
+async function saveServer(){
+  const s={name:document.getElementById('s-name').value.trim(),host:document.getElementById('s-host').value.trim(),port:parseInt(document.getElementById('s-port').value),tls:document.getElementById('s-tls').value==='true',builtin:false};
+  if(!s.name||!s.host||!s.port) return toast(p('toast_server_fill'),'err');
+  servers.push(s);
+  await apiFetch('/api/servers',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(servers)});
+  toast(p('toast_server_saved'),'ok'); toggleAddServer(); renderServers();
+}
+
+async function removeServer(i){
+  servers.splice(i,1);
+  await apiFetch('/api/servers',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(servers)});
+  renderServers();
+}
+
+function renderSettings(){
+  if(cfg.telegram){
+    if(cfg.telegram.enabled !== undefined) document.getElementById('tg-enabled').checked = cfg.telegram.enabled;
+    if(cfg.telegram.token) document.getElementById('tg-token').value=cfg.telegram.token;
+    if(cfg.telegram.chatId) document.getElementById('tg-chatid').value=cfg.telegram.chatId;
+  }
+  if(cfg.ntfy){
+    if(cfg.ntfy.enabled !== undefined) document.getElementById('ntfy-enabled').checked = cfg.ntfy.enabled;
+    if(cfg.ntfy.url)   document.getElementById('ntfy-url').value   = cfg.ntfy.url;
+    if(cfg.ntfy.token) document.getElementById('ntfy-token').value = cfg.ntfy.token;
+  }
+  const gen=cfg.general||{};
+  const langEl=document.getElementById('cfg-language');
+  if(langEl && gen.language) langEl.value=gen.language;
+  if(gen.mempoolExplorer) document.getElementById('cfg-mempool').value=gen.mempoolExplorer;
+  const curEl=document.getElementById('cfg-currency');
+  if(curEl && gen.currency) curEl.value=gen.currency;
+  const tzEl=document.getElementById('cfg-timezone');
+  if(tzEl && gen.timezone) tzEl.value=gen.timezone;
+  const dlEl=document.getElementById('cfg-datelocale');
+  if(dlEl && gen.dateLocale) dlEl.value=gen.dateLocale;
+  const mon=cfg.monitor||{};
+  if(mon.gapLimit) document.getElementById('cfg-gap').value=mon.gapLimit;
+  if(mon.maxIndex) document.getElementById('cfg-max').value=mon.maxIndex;
+  validateGapLimit();
+  validateMaxIndex();
+  const n=cfg.notifications||{};
+  document.getElementById('notif-every-block').checked=n.everyBlock===true;
+  document.getElementById('notif-price-change').checked=n.priceChange===true;
+  if(n.blockIntervalMin!=null) document.getElementById('notif-block-interval').value=n.blockIntervalMin;
+  if(n.priceThresholdPct!=null){ document.getElementById('notif-price-threshold').value=n.priceThresholdPct; }
+  if(n.priceReference!=null) document.getElementById('notif-price-reference').value=n.priceReference;
+  const blockOpen=document.getElementById('notif-every-block').checked;
+  const priceOpen=document.getElementById('notif-price-change').checked;
+  if(blockOpen) toggleNotifSub('block-sub',true);
+  if(priceOpen) toggleNotifSub('price-sub',true);
+  const minPct=mon.priceThresholdMinPct??1;
+  const maxPct=mon.priceThresholdMaxPct??50;
+  const devPct=mon.priceRefMaxDeviationPct??20;
+  const thHint=document.getElementById('notif-threshold-hint');
+  const rfHint=document.getElementById('notif-reference-hint');
+  if(thHint) thHint.textContent=p('settings_notif_price_range',{min:minPct,max:maxPct});
+  validatePriceThreshold();
+  if(rfHint) rfHint.textContent=p('settings_notif_price_ref_hint',{dev:devPct});
+}
+
+function toggleNotifSub(subId,open){ const el=document.getElementById(subId); if(el) el.classList.toggle('open',!!open); }
+function syncNotifSubs(){
+  toggleNotifSub('block-sub',document.getElementById('notif-every-block')?.checked);
+  toggleNotifSub('price-sub',document.getElementById('notif-price-change')?.checked);
+}
+
+function currentBtcPrice(){ return parseFloat(document.getElementById('price-val')?.textContent?.replace(/[^0-9.]/g,''))||0; }
+
+function validatePriceThreshold(){
+  const val=parseFloat(document.getElementById('notif-price-threshold').value);
+  const warn=document.getElementById('notif-threshold-warn');
+  const valueEl=document.getElementById('notif-threshold-value');
+  const minPct=cfg.monitor?.priceThresholdMinPct??1;
+  const maxPct=cfg.monitor?.priceThresholdMaxPct??50;
+  const refPrice=parseFloat(document.getElementById('notif-price-reference')?.value)||currentBtcPrice();
+  if(val>0&&refPrice>0){ const cur=cfg.general?.currency||'USD'; valueEl.textContent=`≈ ${cur} ${parseFloat((refPrice*val/100).toFixed(2)).toLocaleString('en-US')}`; valueEl.style.display='block'; }
+  else valueEl.style.display='none';
+  if(val>0){
+    if(val<minPct){ warn.textContent=p('validation_price_threshold_min',{min:minPct}); warn.style.display='block'; return false; }
+    if(val>maxPct){ warn.textContent=p('validation_price_threshold_max',{max:maxPct}); warn.style.display='block'; return false; }
+  }
+  warn.style.display='none'; return true;
+}
+
+function validatePriceReference(){
+  const val=parseFloat(document.getElementById('notif-price-reference').value);
+  const current=currentBtcPrice();
+  const warn=document.getElementById('notif-reference-warn');
+  if(!val||val<=0){ warn.style.display='none'; return true; }
+  const maxDev=(cfg.monitor?.priceRefMaxDeviationPct??20)/100;
+  if(current>0){
+    const lo=current*(1-maxDev),hi=current*(1+maxDev);
+    if(val<lo||val>hi){ const pct=cfg.monitor?.priceRefMaxDeviationPct??20; warn.textContent=p('validation_price_ref_out',{dev:pct,lo:'$'+Math.round(lo).toLocaleString('en-US'),hi:'$'+Math.round(hi).toLocaleString('en-US')}); warn.style.display='block'; return false; }
+  }
+  warn.style.display='none'; return true;
+}
+
+function validateGapLimit() {
+  const input = document.getElementById('cfg-gap');
+  const val = parseInt(input.value);
+  const warn = document.getElementById('gap-warn');
+  const hint = document.getElementById('gap-hint');
+  
+  if (isNaN(val) || val < 1 || val > 10) {
+    warn.style.display = 'inline';
+    if(hint) hint.style.opacity = '0.5';
+    return false;
+  }
+  warn.style.display = 'none';
+  if(hint) hint.style.opacity = '1';
+  return true;
+}
+
+function validateMaxIndex() {
+  const input = document.getElementById('cfg-max');
+  const val = parseInt(input.value);
+  const warn = document.getElementById('max-warn');
+  const hint = document.getElementById('max-hint');
+  
+  if (isNaN(val) || val < 1 || val > 10000) {
+    warn.style.display = 'inline';
+    if(hint) hint.style.opacity = '0.5';
+    return false;
+  }
+  warn.style.display = 'none';
+  if(hint) hint.style.opacity = '1';
+  return true;
+}
+
+async function saveNotifPrefs(){
+  const threshOk=validatePriceThreshold(); const refOk=validatePriceReference();
+  if(!threshOk||!refOk) return toast(p('toast_settings_fix'),'err');
+  const notifications={everyBlock:document.getElementById('notif-every-block').checked,blockIntervalMin:parseInt(document.getElementById('notif-block-interval').value)||0,priceChange:document.getElementById('notif-price-change').checked,priceThresholdPct:parseFloat(document.getElementById('notif-price-threshold').value)||1,priceReference:parseInt(document.getElementById('notif-price-reference').value)||null};
+  cfg.notifications=notifications; await savePatch({notifications}); clearSettingsDirty(); toast(p('toast_notif_saved'),'ok');
+}
+
+async function testTelegram(){
+  const token=document.getElementById('tg-token').value.trim(); const chatId=document.getElementById('tg-chatid').value.trim();
+  if(!token||!chatId) return toast(p('toast_tg_fill'),'err');
+  const d=await apiFetch('/api/test-telegram',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({token,chatId})});
+  d.ok?toast(p('toast_test_ok'),'ok'):toast(p('toast_test_fail',{error:d.error}),'err');
+}
+
+async function saveTelegram(){
+  const telegram={
+    enabled: document.getElementById('tg-enabled').checked,
+    token:   document.getElementById('tg-token').value.trim(),
+    chatId:  document.getElementById('tg-chatid').value.trim(),
+  };
+  cfg.telegram=telegram; await savePatch({telegram}); clearSettingsDirty(); toast(p('toast_telegram_saved'),'ok');
+}
+
+async function testNtfy(){
+  const url=document.getElementById('ntfy-url').value.trim();
+  const token=document.getElementById('ntfy-token').value.trim();
+  if(!url) return toast(p('toast_ntfy_fill'),'err');
+  const d=await apiFetch('/api/test-ntfy',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({url,token})});
+  d.ok?toast('mensagem enviada','ok'):toast(p('toast_test_fail',{error:d.error}),'err');
+}
+
+async function saveNtfy(){
+  const ntfy={
+    enabled: document.getElementById('ntfy-enabled').checked,
+    url:     document.getElementById('ntfy-url').value.trim(),
+    token:   document.getElementById('ntfy-token').value.trim(),
+  };
+  cfg.ntfy=ntfy; await savePatch({ntfy}); clearSettingsDirty(); toast(p('toast_ntfy_saved'),'ok');
+}
+
+async function saveMonitorCfg(){
+  // 1. Visual and logical validations
+  if (!validateGapLimit()) return toast(p('toast_gap_invalid'),'err');
+  if (!validateMaxIndex()) return toast(p('toast_max_invalid'),'err');
+
+  if(!cfg.monitor) cfg.monitor={};
+  
+  const prevGap = cfg.monitor.gapLimit || 10;
+  const newGap = parseInt(document.getElementById('cfg-gap').value) || 10;
+  const newMax = parseInt(document.getElementById('cfg-max').value) || 1000;
+
+  cfg.monitor.gapLimit = newGap;
+  cfg.monitor.maxIndex = newMax;
+
+  if(!cfg.general) cfg.general={};
+  cfg.general.mempoolExplorer = document.getElementById('cfg-mempool').value.trim();
+
+  // Verifica se precisa mostrar o overlay de carregamento (caso mude o gap)
+  const hdWallets = wallets.filter(w => w.descriptor && !w.descriptor.startsWith('addr('));
+  const gapChanged = newGap !== prevGap && hdWallets.length > 0;
+
+  if(gapChanged){
+    const dir = newGap > prevGap ? 'aumentando' : 'reduzindo';
+    showLoading(newGap>prevGap?p('loading_gap_up',{prev:prevGap,next:newGap}):p('loading_gap_down',{prev:prevGap,next:newGap}));
+    await new Promise(r => setTimeout(r, 100)); // Pequena pausa para o UI renderizar
+  }
+
+  try {
+    // 2. ACTUAL SEND TO SERVER
+    await savePatch({
+      monitor: { 
+        gapLimit: cfg.monitor.gapLimit, 
+        maxIndex: cfg.monitor.maxIndex 
+      },
+      general: { 
+        mempoolExplorer: cfg.general.mempoolExplorer 
+      }
+    });
+
+    clearSettingsDirty();
+    if(!gapChanged) toast(p('toast_monitor_saved'),'ok');
+    
+  } catch (e) {
+    hideLoading();
+    toast(p('toast_save_error',{error:e.message}),'err');
+  }
+}
+
+async function savePatch(patch){ await apiFetch('/api/config',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(patch)}); }
+async function saveCfg(){ await savePatch(cfg); }
+
+let toastTimer;
+function toast(msg,type='ok'){ const el=document.getElementById('toast'); el.textContent=msg; el.className='toast '+type+' show'; clearTimeout(toastTimer); toastTimer=setTimeout(()=>el.classList.remove('show'),3500); }
+
+// ─── RUNTIME LOCK — overlay controlado pelo servidor ─────────────────────────
+// O panel.js (e o monitor.js via runtime.json) gravam { active, msg, timeoutAt }
+// to /api/runtime-lock. The panel polls this route and keeps the overlay
+// visible while active===true, regardless of which window triggered the operation.
+// Um timeout local (CLIENT_LOCK_TIMEOUT_MS) libera a UI caso o servidor pare
+// de responder — evitando travamento permanente.
+
+const CLIENT_LOCK_TIMEOUT_MS = 200_000; // 200 s — margem acima do timeout do servidor
+let _lockPollTimer  = null;
+let _lockWatchdog   = null;
+let _lockActive     = false;
+// True only after the server confirms active===true at least once.
+// While false, active===false poll responses are ignored (avoids closing
+// o overlay antes do panel.js ter gravado o lock no runtime.json).
+let _lockConfirmedByServer = false;
+
+const LOCK_POLL_FAST_MS =   300;
+const LOCK_POLL_IDLE_MS = 5_000;
+const LOCK_CLOSE_DELAY_MS = 1_000; // fixed delay before closing the overlay
+
+function showLoading(msg){
+  msg = msg || p('loading_default');
+  document.getElementById('loading-msg').textContent = msg;
+  document.getElementById('loading-overlay').classList.remove('hidden');
+  if(!_lockActive){
+    _lockActive = true;
+    _lockConfirmedByServer = false; // reset confirmation — waiting for server
+    _rescheduleLockPoll();
+  } else {
+    // Already active — just update the message
+    document.getElementById('loading-msg').textContent = msg;
+  }
+  clearTimeout(_lockWatchdog);
+  _lockWatchdog = setTimeout(()=>{
+    console.warn('runtime lock: watchdog timeout — releasing UI');
+    _forceHideLoading();
+  }, CLIENT_LOCK_TIMEOUT_MS);
+}
+
+function hideLoading(){
+  document.getElementById('loading-overlay').classList.add('hidden');
+  _lockActive = false;
+  _lockConfirmedByServer = false;
+  clearTimeout(_lockWatchdog);
+  _rescheduleLockPoll();
+}
+
+function _forceHideLoading(){
+  hideLoading();
+  toast(p('toast_op_expired'),'err');
+}
+
+async function _pollRuntimeLock(){
+  try {
+    const lock = await apiFetch('/api/runtime-lock');
+    if(lock.active){
+      // Server confirmed lock — from here we monitor for release
+      _lockConfirmedByServer = true;
+      showLoading(lock.msg || p('loading_default'));
+    } else if(_lockActive && _lockConfirmedByServer){
+      // Server cleared the lock — check if it was due to Electrum connection failure
+      const electrumError = lock.electrumError;
+      setTimeout(async ()=>{
+        hideLoading();
+        await load();
+        if(electrumError){
+          toast(`${p('status_error')}: ${electrumError}`,'err');
+        } else {
+          toast(p('toast_op_done'),'ok');
+        }
+      }, LOCK_CLOSE_DELAY_MS);
+    }
+    // If !_lockConfirmedByServer and active===false: server has not yet written the
+    // lock (POST race condition) — ignore and continue fast polling
+  } catch { /* silencioso */ }
+}
+
+function _rescheduleLockPoll(){
+  clearTimeout(_lockPollTimer);
+  const delay = _lockActive ? LOCK_POLL_FAST_MS : LOCK_POLL_IDLE_MS;
+  _lockPollTimer = setTimeout(async ()=>{
+    await _pollRuntimeLock();
+    _rescheduleLockPoll();
+  }, delay);
+}
+
+function startLockPoll(){
+  if(_lockPollTimer) return;
+  _rescheduleLockPoll();
+}
+function stopLockPoll(){
+  clearTimeout(_lockPollTimer);
+  _lockPollTimer = null;
+}
+
+// When tab regains focus, trigger immediate poll without waiting for next tick
+document.addEventListener('visibilitychange', ()=>{
+  if(document.visibilityState === 'visible' && getToken()){
+    clearTimeout(_lockPollTimer);
+    _lockPollTimer = null;
+    _pollRuntimeLock().then(()=>_rescheduleLockPoll());
+  }
+});
+
+// Serialized queue — prevents concurrent wallet additions/removals
+let _walletOpQueue=Promise.resolve();
+function queueWalletOp(fn){ _walletOpQueue=_walletOpQueue.then(fn).catch(()=>{}); return _walletOpQueue; }
+
+// On page load, check whether an operation is pending on the server
+// (e.g. reload during indexing) and resume the overlay immediately
+
+let _pollInterval=null;
+function startPolling(){ if(_pollInterval) return; _pollInterval=setInterval(load,5000); }
+function stopPolling(){ clearInterval(_pollInterval); _pollInterval=null; }
+
+function isBitcoinAddress(str){
+  str=str.trim();
+  if(/^[13][a-km-zA-HJ-NP-Z1-9]{25,34}$/.test(str)) return true;
+  if(/^bc1[ac-hj-np-z02-9]{11,71}$/.test(str)) return true;
+  if(/^tb1[ac-hj-np-z02-9]{11,71}$/.test(str)) return true;
+  if(/^(bc1p|tb1p)[ac-hj-np-z02-9]{8,87}$/.test(str)) return true;
+  return false;
+}
+
+// Saves selected language immediately, reloads translation file and re-applies
+// Save all locale/display settings (language, currency, timezone, dateLocale).
+// Called by the "save" button — not on-change, so the user confirms before applying.
+async function saveLocaleCfg(){
+  const lang       = document.getElementById('cfg-language').value;
+  const currency   = document.getElementById('cfg-currency').value;
+  const timezone   = document.getElementById('cfg-timezone').value;
+  const dateLocale = document.getElementById('cfg-datelocale').value;
+
+  if(!cfg.general) cfg.general = {};
+  const prevCurrency = cfg.general.currency;
+
+  cfg.general.language   = lang;
+  cfg.general.currency   = currency;
+  if(timezone)  cfg.general.timezone   = timezone;
+  cfg.general.dateLocale = dateLocale;
+
+  await savePatch({ general: {
+    language:   lang,
+    currency,
+    timezone,
+    dateLocale,
+  }});
+
+  // Reload i18n if language changed
+  await loadI18n(lang);
+
+  // If currency changed: clear local price history cache and re-fetch immediately
+  // so the chart updates without waiting for the next poll cycle
+  if(currency !== prevCurrency){
+    priceHistory = [];
+    renderPriceChart();
+    try {
+      const ph = await apiFetch('/api/pricehistory').catch(()=>[]);
+      priceHistory = Array.isArray(ph) ? ph : [];
+    } catch {}
+    renderPriceChart();
+    fetchPrice();
+  }
+
+  clearSettingsDirty();
+  toast(p('toast_locale_saved'), 'ok');
+}
+
+// Saves only the Telegram enabled field immediately when the toggle is moved
+async function saveTelegramEnabled(){
+  const enabled = document.getElementById('tg-enabled').checked;
+  if(!cfg.telegram) cfg.telegram = {};
+  cfg.telegram.enabled = enabled;
+  await savePatch({ telegram: { enabled } });
+  toast(p(enabled ? 'toast_telegram_enabled' : 'toast_telegram_disabled'), 'ok');
+}
+
+// Saves only the ntfy enabled field immediately when the toggle is moved
+async function saveNtfyEnabled(){
+  const enabled = document.getElementById('ntfy-enabled').checked;
+  if(!cfg.ntfy) cfg.ntfy = {};
+  cfg.ntfy.enabled = enabled;
+  await savePatch({ ntfy: { enabled } });
+  toast(p(enabled ? 'toast_ntfy_enabled' : 'toast_ntfy_disabled'), 'ok');
+}
+
+function autoDetectDescriptor(desc){
+  const el=document.getElementById('w-autodetect'); if(!el) return;
+  if(!desc.trim()){ el.style.display='none'; return; }
+  const d=desc.trim().split('#')[0]; let hint='';
+  if(isBitcoinAddress(d)){
+    if(d.startsWith('bc1p')||d.startsWith('tb1p')) hint=p('autodetect_taproot_addr');
+    else if(d.startsWith('bc1')||d.startsWith('tb1')) hint=p('autodetect_segwit_addr');
+    else if(d.startsWith('3')) hint=p('autodetect_p2sh_addr');
+    else if(d.startsWith('1')) hint=p('autodetect_legacy_addr');
+    else hint=p('autodetect_addr');
+  } else if(/^addr\(/.test(d)) hint=p('autodetect_addr_direct');
+  else if(/^tr\(/.test(d)) hint=p('autodetect_taproot_desc');
+  else if(/^wpkh\(/.test(d)) hint=p('autodetect_segwit_desc');
+  else if(/^sh\(wpkh\(/.test(d)) hint=p('autodetect_wrapped_desc');
+  else if(/^pkh\(/.test(d)) hint=p('autodetect_legacy_desc');
+  else if(/^wsh\(sortedmulti\(/.test(d)||/^wsh\(multi\(/.test(d)){ const m=d.match(/sortedmulti\((\d+)/)||d.match(/multi\((\d+)/); const keys=(d.match(/xpub|tpub/g)||[]).length; hint=p('autodetect_multisig_desc',{m:m?m[1]:'?',n:keys}); }
+  else if(/^sh\(wsh\(/.test(d)) hint=p('autodetect_multisig_wrapped');
+  else if(/^wsh\(/.test(d)) hint=p('autodetect_p2wsh');
+  else if(/44h|44[']/.test(d)) hint=p('autodetect_bip44');
+  else if(/49h|49[']/.test(d)) hint=p('autodetect_bip49');
+  else if(/84h|84[']/.test(d)) hint=p('autodetect_bip84');
+  else if(/86h|86[']/.test(d)) hint=p('autodetect_bip86');
+  else if(/48h|48[']/.test(d)) hint=p('autodetect_bip48');
+  if(hint){ el.textContent=hint; el.style.display='block'; } else el.style.display='none';
+}
+</script>
+</body>
+</html>
